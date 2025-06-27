@@ -1,9 +1,8 @@
 {
-  "functions": {
-    "api/agent-tick/route.js": {
-      "runtime": "edge",
+  "cron": [
+    {
+      "path": "/api/agent-tick",
       "schedule": "* * * * *"
-      "kv": true
     }
-  }
+  ]
 }
