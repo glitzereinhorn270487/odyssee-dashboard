@@ -1,12 +1,7 @@
 {
-  "cron": [
-    {
-      "path": "/api/agent-tick",
+  "functions": {
+    "api/agent-tick/route.js": {
       "schedule": "* * * * *"
-    },
-    {
-      "path": "/api/manage-positions",
-      "schedule": "*/15 * * * * *"
     }
-  ]
+  }
 }
