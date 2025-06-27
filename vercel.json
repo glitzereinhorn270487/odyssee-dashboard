@@ -3,6 +3,7 @@
     "api/agent-tick/route.js": {
       "runtime": "edge",
       "schedule": "* * * * *"
+      "kv": true
     }
   }
 }
