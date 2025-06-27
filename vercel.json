@@ -1,8 +1,8 @@
 {
-  "cron": [
-    {
-      "path": "/api/agent-tick",
-      "schedule": "* * * * *"
+  "functions": {
+    "api/agent-tick/route.js": {
+      "memory": 512,
+      "maxDuration": 10
     }
-  ]
+  }
 }
