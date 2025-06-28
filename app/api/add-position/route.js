@@ -1,15 +1,7 @@
-import { kv } from "@vercel/kv";
+// app/api/add-position/route.js
+import Redis from "ioredis";
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
-}
+const redis = new Redis(process.env.KV_REST_API_URL);
 
 export async function POST(req) {
   try {
@@ -18,30 +10,21 @@ export async function POST(req) {
     if (!data.token || !data.wallet || !data.cluster) {
       return new Response("Missing required fields", {
         status: 400,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
     const key = `live:${data.token}`;
-    await kv.set(key, data);
+    await redis.set(key, JSON.stringify(data));
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Invalid JSON or KV error" }), {
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     });
   }
 }
