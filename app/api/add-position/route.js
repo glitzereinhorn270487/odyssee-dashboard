@@ -4,6 +4,7 @@ const redis = new Redis({
   host: "redis-1420-crce198.eu-central-1-3.ec2.redns.redis-cloud.com",
   port: 14120,
   password: "Igk5UtovkygHlJw7KmgSnICWZjv5wfO",
+  tls: {},
   maxRetriesPerRequest: null
 });
 
