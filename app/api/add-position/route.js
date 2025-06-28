@@ -1,6 +1,11 @@
 import Redis from "ioredis";
 
-const redis = new Redis(process.env.KV_REST_API_URL);
+const redis = new Redis({
+  host: "redis-1420-crce198.eu-central-1-3.ec2.redns.redis-cloud.com",
+  port: 14120,
+  password: "Igk5UtovkygHlJw7KmgSnICWZjv5wfO",
+  maxRetriesPerRequest: null
+});
 
 // OPTIONS-Anfrage behandeln (für CORS Preflight)
 export async function OPTIONS() {
