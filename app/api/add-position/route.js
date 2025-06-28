@@ -1,27 +1,7 @@
-import Redis from "ioredis";
+// app/api/add-position/route.ts
+import redis from "@/lib/redis"; // sicherstellen, dass Pfad stimmt
 
-const redis = new Redis({
-  host: "redis-1420-crce198.eu-central-1-3.ec2.redns.redis-cloud.com",
-  port: 14120,
-  password: "Igk5UtovkygHlJw7KmgSnICWZjv5wfO",
-  tls: {},
-  maxRetriesPerRequest: null
-});
-
-// OPTIONS-Anfrage behandeln (für CORS Preflight)
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
-}
-
-// POST-Anfrage behandeln
-export async function POST(req) {
+export async function POST(req: Request) {
   try {
     const data = await req.json();
 
@@ -35,8 +15,7 @@ export async function POST(req) {
       });
     }
 
-    const key = `live:${data.token}`;
-    await redis.set(key, JSON.stringify(data));
+    await redis.set(`live:${data.token}`, JSON.stringify(data));
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -45,13 +24,20 @@ export async function POST(req) {
         "Content-Type": "application/json",
       },
     });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: "Invalid JSON or Redis error", detail: err.message }), {
-      status: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-    });
+  } catch (err: any) {
+    console.error("REDIS ERROR:", err);
+    return new Response(
+      JSON.stringify({
+        error: "Invalid JSON or Redis error",
+        detail: err?.message || "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 }
