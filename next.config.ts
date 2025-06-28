@@ -1,9 +1,8 @@
 import { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    serverExternalPackages: ["@vercel/kv"]
-  }
+  serverExternalPackages: ["@vercel/kv"]
+  
 };
 
 export default nextConfig;
