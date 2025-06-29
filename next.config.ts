@@ -1,7 +1,7 @@
 import { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@vercel/kv"]
+  serverExternalPackages: ["redis"]
   
 };
 
