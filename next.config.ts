@@ -1,8 +1,6 @@
-import { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  serverExternalPackages: ["redis"]
-  
+// next.config.ts
+const nextConfig = {
+  serverExternalPackages: ["ioredis"],
 };
 
 export default nextConfig;
