@@ -8,9 +8,9 @@ import { telegramToggles } from "@/config/telegramToggles";
 import { notifyBuySignal } from "@/lib/telegram-events";
 
 await notifyBuySignal({
-  symbol: token.symbol,
+  symbol: candidate.symbol,
   score: score.totalScore,
-  category: token.category
+  category: candidate.category
 });
 
 export async function decideTrade(token: any, currentStufe: string) {
