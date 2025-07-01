@@ -7,7 +7,7 @@ type TokenScore = {
   flags: string[];
 };
 
-export async function getTokenScore(token) {
+export async function getTokenScore(token: any) {
   return {
     baseScore: 87,
     totalScore: 103,
