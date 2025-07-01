@@ -1,13 +1,19 @@
 // File: app/lib/scoring.ts
 
 // Beispiel: scoring.ts
+type TokenScore = {
+  baseScore: number;
+  totalScore: number;
+  flags: string[];
+};
+
 export async function getTokenScore(token) {
   return {
     baseScore: 87,
     totalScore: 103,
     flags: []
   };
-  
+
   // Dummy-Logik – kann später mit echter Metrik ersetzt werden
   return Math.floor(Math.random() * 100);
 }
