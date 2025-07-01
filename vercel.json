@@ -1,12 +1,14 @@
 {
-  "crons": [
+  "cron": [
     {
       "path": "/api/find-new-tokens",
-      "schedule": "* * * * *"         // jede Minute
+      "schedule": "* * * * *", // alle 1 Minute
+      "method": "GET"
     },
     {
       "path": "/api/manage-positions",
-      "schedule": "*/1 * * * *"       // alle 1 Minute (zurzeit testweise, später evtl. "*/0.25 * * * * *" per Programmierung)
+      "schedule": "*/1 * * * *", // alle 1 Minute (zum Testen, später evtl. alle 15 Sekunden lokal)
+      "method": "GET"
     }
   ]
 }
