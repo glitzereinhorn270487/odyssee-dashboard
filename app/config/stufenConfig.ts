@@ -1,6 +1,15 @@
 // Datei: app/config/stufenConfig.ts
 
-export const stufenConfig = {
+export type Stufen = {
+  id: string;
+  name: string;
+  kapital: number;
+  beschreibung: string;
+  maxSlippage: number;
+  boosterKapital: number;
+};
+
+export const stufenConfig: Record<string, Stufen> = {
   M0: {
     id: "M0",
     name: "Micro-Stufe 0",
@@ -17,5 +26,5 @@ export const stufenConfig = {
     maxSlippage: 3,
     boosterKapital: 5,
   },
-  // ... M2–M5 weiterführen
+  // Füge M2–M5 hinzu
 };
