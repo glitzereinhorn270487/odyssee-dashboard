@@ -1,17 +1,7 @@
-// app/lib/price-manager.ts
+export async function getLivePrice(tokenAddress: string): Promise<number> {
+  return 0.001; // Platzhalter
+}
 
-export async function getCurrentPrice(tokenAddress: string): Promise<number> {
-  try {
-    const response = await fetch(`https://public-api.birdeye.so/public/price?address=${tokenAddress}`, {
-      headers: {
-        "X-API-KEY": process.env.BIRDEYE_API_KEY!,
-      },
-    });
-
-    const json = await response.json();
-    return json.data.value || 0;
-  } catch (error) {
-    console.error("Fehler beim Abrufen des Preises:", error);
-    return 0;
-  }
+export function checkSellRules(token: any, currentPrice: number): { shouldSell: boolean; reason: string } {
+  return { shouldSell: false, reason: "Dummy" };
 }
