@@ -6,11 +6,13 @@ import { decidePolice } from "@/lib/policy-decision";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { telegramToggles } from "@/config/telegramToggles";
 import { notifyBuySignal } from "@/lib/telegram-events";
+import { notifySellLoss } from "@/lib/telegram-events";
+import { notifySellProfit } from "@/lib/telegram-events";
 
 await notifyBuySignal({
-  symbol: candidate.symbol,
+  symbol: token.symbol,
   score: score.totalScore,
-  category: candidate.category
+  category: token.category
 });
 
 export async function decideTrade(token: any, currentStufe: string) {
