@@ -1,4 +1,11 @@
 import { TradeCandidate } from "@/types/token";
+import { notifyBuySignal } from "@/lib/telegram-events";
+
+await notifyBuySignal({
+  symbol: token.symbol,
+  score: score.totalScore,
+  category: token.category
+});
 
 export async function executeS_TierStrategy(token: TradeCandidate) {
   const capital = getCapitalForStage();

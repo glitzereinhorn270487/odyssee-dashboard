@@ -4,6 +4,14 @@ import { stufenConfig } from "@/config/stufenConfig";
 import { getTokenScore, getRiskLevel, getBoostScore } from "@/lib/scoring";
 import { decidePolice } from "@/lib/policy-decision";
 import { sendTelegramMessage } from "@/lib/telegram";
+import { telegramToggles } from "@/config/telegramToggles";
+import { notifyBuySignal } from "@/lib/telegram-events";
+
+await notifyBuySignal({
+  symbol: token.symbol,
+  score: score.totalScore,
+  category: token.category
+});
 
 export async function decideTrade(token: any, currentStufe: string) {
 
@@ -16,8 +24,6 @@ export async function decideTrade(token: any, currentStufe: string) {
   let numericScore: number = typeof score === 'number' ? score : score.baseScore;
 
   const shouldBuy = numericScore >= stufen.minScore && risk <= stufen.maxRisk;
-
-import { telegramToggles } from "@/config/telegramToggles";
 
 // ...
 
