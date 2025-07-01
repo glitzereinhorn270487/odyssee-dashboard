@@ -9,7 +9,7 @@ export interface InvestmentStufe {
   boosterKapital: number;
 }
 
-export const stufen: InvestmentStufe[] = [
+export const stufenConfig = 
   {
     id: "M0",
     name: "Mikro-Stufe 0",
