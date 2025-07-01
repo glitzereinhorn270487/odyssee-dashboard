@@ -13,7 +13,7 @@ export async function decideTrade(token: any, currentStufe: string) {
 
   let numericScore: number = typeof score === 'number' ? score : score.baseScore;
 
-  const shouldBuy = score.baseScore >= stufen.minScore && risk <= stufen.maxRisk;
+  const shouldBuy = numericScore >= stufen.minScore && risk <= stufen.maxRisk;
 
   if (!shouldBuy) return null;
 
