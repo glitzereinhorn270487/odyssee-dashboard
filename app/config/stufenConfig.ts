@@ -7,6 +7,8 @@ export type Stufen = {
   beschreibung: string;
   maxSlippage: number;
   boosterKapital: number;
+  minScore: number;
+  maxRisk: number;
 };
 
 export const stufenConfig: Record<string, Stufen> = {
