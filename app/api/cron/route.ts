@@ -1,27 +1,17 @@
-// app/api/cron/route.ts
-import { NextRequest } from "next/server";
-import redis from "@/lib/redis"; // Pfad zu deiner Redis-Instanz
+import redis from "@/lib/redis";
 
-export async function GET(req: NextRequest) {
-  const auth = req.headers.get("Authorization");
-  const validSecret = `Bearer ${process.env.CRON_SECRET}`;
-
-  if (auth !== validSecret) {
-    return new Response("Unauthorized", { status: 401 });
+export async function GET(req: Request) {
+  if (!redis.status || redis.status !== "ready") {
+    console.error("❌ Redis ist nicht verbunden:", redis.status);
+    return new Response("Redis nicht verbunden", { status: 503 });
   }
 
   try {
-    // ✅ Beispielaktion: Schreibe einen Testwert in Redis
-    await redis.set("cron:heartbeat", new Date().toISOString());
-
-    return new Response("✅ Cronjob erfolgreich ausgeführt", {
-      status: 200,
-    });
-  } catch (err: any) {
-    console.error("❌ Cronjob Fehler:", err);
-    return new Response("Cronjob-Fehler: " + err?.message, {
-      status: 500,
-    });
+    await redis.set("cron:check", new Date().toISOString());
+    return new Response("✅ Cronjob ausgeführt");
+  } catch (err) {
+    console.error("❌ Redis-Fehler:", err);
+    return new Response("Fehler beim Schreiben in Redis", { status: 500 });
   }
 }
 
