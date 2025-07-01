@@ -1,6 +1,6 @@
 // Datei: app/lib/policy-decision.ts
 
-export function decidePolice(score: number, risk: number, boost: number): string {
+export function decidePolice(numericScore: number, risk: number, boost: number): string {
   if (score > 85 && boost > 30 && risk < 20) {
     return "Hybrid-Moonshot";
   } else if (score > 70 && risk < 35) {
