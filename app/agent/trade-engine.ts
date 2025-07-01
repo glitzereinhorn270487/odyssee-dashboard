@@ -3,7 +3,7 @@
 import { stufenConfig } from "@/config/stufenConfig";
 import { getTokenScore, getRiskLevel, getBoostScore } from "@/lib/scoring";
 import { decidePolice } from "@/lib/policy-decision";
-import { sendTelegramMessage } from "@/lib/telegrsm";
+import { sendTelegramMessage } from "@/lib/telegram";
 
 export async function decideTrade(token: any, currentStufe: string) {
 
