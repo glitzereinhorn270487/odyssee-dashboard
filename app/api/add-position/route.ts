@@ -56,9 +56,4 @@ if (telegramToggles.global && telegramToggles.tradePerformance) {
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Content-Type": "application/json",
-        },
-export async function POST(req: Request) {
-  try {
-    const data = await req.json();
- }
-}
+        }
