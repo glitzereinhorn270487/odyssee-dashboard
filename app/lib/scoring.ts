@@ -1,6 +1,21 @@
 // File: app/lib/scoring.ts
 
 export function getTokenScore(token: any): number {
+    // Beispielhafte Score-Berechnung
+  return {
+    baseScore: 82,
+    safetyScore: 91,
+    performanceScore: 77,
+    alphaScore: 92,
+    scoreX: 80,
+    socialBuzz: 67,
+    winRate: 72,
+    rugRate: 0.04,
+    follower: 45.000,
+    influenceScore: 96,
+    socialScore: 71,
+    boostScore: 83,
+  };
   // Dummy-Logik – kann später mit echter Metrik ersetzt werden
   return Math.floor(Math.random() * 100);
 }
