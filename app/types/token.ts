@@ -7,5 +7,14 @@ export interface TradeCandidate {
   risk?: number;
   baseScore?: number;
   totalScore?: number;
+  token?: string;
+  notice?: string;
+  narrative?: string;
+  type?: string;
+  follower?: number;
+  winRate?: number;
+  rugRate?: number;
+  
+
   // ... weitere Felder je nach Bedarf
 }

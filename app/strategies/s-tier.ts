@@ -34,7 +34,7 @@ async function simulateBuy(
   slippage: number
 ): Promise<boolean> {
   console.log(
-    `🛒 Kaufe Token ${token.token} für ${usdAmount}$ mit ${slippage}% Slippage.`
+    `🛒 Kaufe Token ${token} für ${usdAmount}$ mit ${slippage}% Slippage.`
   );
   return true; // hier später echte Onchain-Logik integrieren
 }
