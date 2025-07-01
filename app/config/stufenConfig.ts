@@ -13,18 +13,22 @@ export const stufenConfig: Record<string, Stufen> = {
   M0: {
     id: "M0",
     name: "Micro-Stufe 0",
-    kapital: 15,
-    beschreibung: "Initial-Test mit minimalem Kapital",
-    maxSlippage: 2.5,
+    kapital: 25,
+    beschreibung: "Kleinstkapital Einstieg",
+    maxSlippage: 5,
     boosterKapital: 0,
+    minScore: 70,
+    maxRisk: 40
   },
   M1: {
     id: "M1",
     name: "Micro-Stufe 1",
-    kapital: 30,
-    beschreibung: "Früher Entry mit leicht erhöhter Slippage",
-    maxSlippage: 3,
-    boosterKapital: 5,
+    kapital: 50,
+    beschreibung: "Kleiner Einstieg mit mehr Risiko",
+    maxSlippage: 6,
+    boosterKapital: 10,
+    minScore: 75,
+    maxRisk: 35
   },
   // Füge M2–M5 hinzu
 };
