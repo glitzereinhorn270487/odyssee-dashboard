@@ -19,7 +19,7 @@ export async function decideTrade(token: any, currentStufe: string) {
 
   return {
     token,
-    investmentAmount: stufen.capital,
+    investmentAmount: stufen.kapital,
     maxSlippage: stufen.slippage,
     police: decidePolice(token.category, score, boost, risk),
     reinvestStufe: currentStufe,
