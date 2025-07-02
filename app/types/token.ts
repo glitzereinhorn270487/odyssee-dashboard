@@ -14,6 +14,9 @@ export interface TradeCandidate {
   follower?: number;
   winRate?: number;
   rugRate?: number;
+  symbol?: string;
+  name?: string;
+  candidate?: string;
   
 
   // ... weitere Felder je nach Bedarf
