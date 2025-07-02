@@ -9,6 +9,20 @@ import { notifySellProfit } from "@/lib/telegram-events";
 /**
  * 🔹 Systemstart
  */
+export async function sendSellLoss(symbol: string, lossPercent: number) {
+  if (telegramToggles.global && telegramToggles.tradePerformance) {
+    await sendTelegramMessage(
+      `❌ <b>VERKAUF (STOP-LOSS):</b>\nPosition $${symbol} bei -${lossPercent}% verkauft.`
+    );
+  }
+}
+export async function sendSellGain(symbol: string, gainPercent: number) {
+  if (telegramToggles.global && telegramToggles.tradePerformance) {
+    await sendTelegramMessage(
+      `💰 <b>VERKAUF (GEWINN):</b>\nPosition $${symbol} mit +${gainPercent}% verkauft.`
+    );
+  }
+}
 export async function notifySystemStart() {
   if (telegramToggles.global && telegramToggles.system) {
     await sendTelegramMessage(
