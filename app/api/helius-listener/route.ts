@@ -1,4 +1,4 @@
-import { decideTrade } from "@/app/agent/trade-engine";
+import { decideTrade } from "@/agent/trade-engine";
 import { fetchRecentRaydiumTokens } from "@/lib/token-fetcher"; // Diese Funktion musst du ggf. selbst schreiben
 import { isTokenAlreadyTracked } from "@/lib/redis"; // Token-Tracking-Cache zur Duplikatvermeidung
 
