@@ -1,13 +1,14 @@
 import { TradeCandidate } from "@/types/token";
 import { notifyBuySignal } from "@/lib/telegram-events";
 
-await notifyBuySignal({
-  symbol: token.symbol,
-  score: score.totalScore,
-  category: token.category
-});
-
 export async function executeS_TierStrategy(token: TradeCandidate) {
+  const score = await getTokenScore(token); // ← Score hier abrufen
+  await notifyBuySignal({
+    symbol: token.symbol,
+    score: score.totalScore,
+    category: token.category
+  });
+
   const capital = getCapitalForStage();
   const stages = getInvestmentStages(capital);
 
@@ -21,6 +22,11 @@ export async function executeS_TierStrategy(token: TradeCandidate) {
   }
 
   console.log("📈 S-Tier Kaufprozess abgeschlossen.");
+}
+
+// Diese Funktion musst du ebenfalls importieren oder implementieren
+async function getTokenScore(token: TradeCandidate): Promise<{ totalScore: number }> {
+  return { totalScore: 87 }; // Platzhalter, echte Funktion anpassen
 }
 
 function getCapitalForStage(): number {
@@ -41,7 +47,7 @@ async function simulateBuy(
   slippage: number
 ): Promise<boolean> {
   console.log(
-    `🛒 Kaufe Token ${token} für ${usdAmount}$ mit ${slippage}% Slippage.`
+    `🛒 Kaufe Token ${token.symbol} für ${usdAmount}$ mit ${slippage}% Slippage.`
   );
-  return true; // hier später echte Onchain-Logik integrieren
+  return true;
 }
