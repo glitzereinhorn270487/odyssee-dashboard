@@ -1,0 +1,9 @@
+{
+  "cron": [
+    {
+      "path": "/api/agent-tick",
+      "schedule": "*/1 * * * *",
+      "method": "GET"
+    }
+  ]
+}

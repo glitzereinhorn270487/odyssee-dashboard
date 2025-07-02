@@ -1,8 +1,15 @@
-// app/api/agent-tick/route.js
-export async function GET(request) {
-  console.log("[AGENT-TICK] Cronjob ausgeführt");
-  return new Response(JSON.stringify({ status: "Tick empfangen" }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" }
-  });
+// app/api/agent-tick/route.ts
+import { GET as heliusListener } from "@/app/api/find-new-tokens/route";
+import { isHoneypot } from "@/lib/honeypotCheck";
+
+// ...
+
+const honeypot = await isHoneypot(token.address);
+if (honeypot) {
+  console.log(`⛔ BLOCKIERT (HONEYPOT): ${token.symbol}`);
+  continue;
+}
+export async function GET() {
+  console.log("[AGENT-TICK] getriggert via Vercel Cron Job");
+  return await heliusListener();
 }
