@@ -2,8 +2,6 @@
 
 import { telegramToggles } from "@/config/telegramToggles";
 import { sendTelegramMessage } from "@/lib/telegram";
-import { notifySellLoss } from "@/lib/telegram-events";
-import { notifySellProfit } from "@/lib/telegram-events";
 
 
 /**
