@@ -7,4 +7,5 @@ export const telegramToggles = {
   moonshots: true,
   stagnationAlerts: true,
   tradePerformance: true,
+  system: true,
 };
