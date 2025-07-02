@@ -6,4 +6,5 @@ export const telegramToggles = {
   nearMisses: false,
   moonshots: true,
   stagnationAlerts: true,
+  tradePerformance: true,
 };
