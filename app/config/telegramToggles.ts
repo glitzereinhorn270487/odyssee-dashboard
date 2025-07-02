@@ -8,4 +8,5 @@ export const telegramToggles = {
   stagnationAlerts: true,
   tradePerformance: true,
   system: true,
+  sales: true,
 };
