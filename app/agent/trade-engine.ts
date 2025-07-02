@@ -10,9 +10,9 @@ import { notifySellLoss } from "@/lib/telegram-events";
 import { notifySellProfit } from "@/lib/telegram-events";
 
 await notifyBuySignal({
-  symbol: candidate.symbol,
+  symbol: token.symbol,
   score: score.totalScore,
-  category: candidate.category
+  category: token.category
 });
 
 export async function decideTrade(token: any, currentStufe: string) {
