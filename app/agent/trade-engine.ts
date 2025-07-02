@@ -28,10 +28,10 @@ export async function decideTrade(token: any, currentStufe: string) {
 
     // Alternative strukturierte Nachricht
     await notifyBuySignal({
-      symbol: token.symbol,
-      score: score.totalScore,
-      category: token.category
-    });
+       symbol: token.symbol,
+       score: typeof score === "number" ? score : score.totalScore,
+       category: token.category
+     });
 
     return {
       token,
