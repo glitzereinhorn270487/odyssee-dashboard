@@ -31,7 +31,8 @@ export async function GET() {
         address: tokenAddress,
         symbol: tokenSymbol,
         name: tokenName,
-      });
+        category: "moonshot"
+      }, "M1");
 
       if (decision?.shouldBuy) {
         await sendTelegramMessage(`📈 Paper-Trade für $${tokenSymbol} ausgelöst`);

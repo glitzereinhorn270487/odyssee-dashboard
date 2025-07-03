@@ -7,7 +7,15 @@ import { sendTelegramMessage } from "@/lib/telegram";
 import { telegramToggles } from "@/config/telegramToggles";
 import { notifyBuySignal, notifySellLoss, notifySellProfit } from "@/lib/telegram-events";
 
+const decision = await decideTrade({
+  address: tokenAddress,
+  symbol: tokenSymbol,
+  name: tokenName,
+  category: "moonshot",
+}, "M1");
+
 export async function decideTrade(token: any, currentStufe: string) {
+  const { symbol, category } = token;
   const stufen = stufenConfig[currentStufe];
 
   const risk = await getRiskLevel(token);
@@ -30,8 +38,8 @@ export async function decideTrade(token: any, currentStufe: string) {
     await notifyBuySignal({
        symbol: token.symbol,
        score: typeof score === "number" ? score : score.totalScore,
-       category: "moonshot", // oder wie verfügbar
-     }, "M1");
+       category: token.category
+     });
 
     return {
       token,
