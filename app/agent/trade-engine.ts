@@ -30,8 +30,8 @@ export async function decideTrade(token: any, currentStufe: string) {
     await notifyBuySignal({
        symbol: token.symbol,
        score: typeof score === "number" ? score : score.totalScore,
-       category: token.category
-     });
+       category: "moonshot", // oder wie verfügbar
+     }, "M1");
 
     return {
       token,
