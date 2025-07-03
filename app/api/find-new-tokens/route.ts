@@ -17,7 +17,7 @@ export async function GET() {
     const decision = await decideTrade(token, "M0");
     if (decision) {
       console.log(`✅ PAPER-TRADE für ${token.symbol}`);
-      await trackTokenInRedis(token.address); // Verhindert Dopplung
+      await trackTokenInRedis(token.address, token); // Verhindert Dopplung
       tradeCount++;
     }
   }
