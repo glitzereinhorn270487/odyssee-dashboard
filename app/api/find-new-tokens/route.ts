@@ -11,7 +11,7 @@ export async function GET() {
   let tradeCount = 0;
 
   for (const token of pools) {
-    const alreadyTracked = await isTokenAlreadyTracked(token.address);
+    const alreadyTracked = await isTokenAlreadyTracked(tokenAddress);
     if (alreadyTracked) continue;
 
     const decision = await decideTrade(token, "M0");
