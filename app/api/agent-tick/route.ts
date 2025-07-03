@@ -23,7 +23,7 @@ export async function GET() {
 
     if (tradeDecision) {
       console.log(`✅ Paper-Trade für ${token.symbol} ausgelöst.`);
-      await trackTokenInRedis(token.address); // ✅ nicht doppelt ausführen
+      await trackTokenInRedis(token.address, token); // ✅ nicht doppelt ausführen
       newTrades++;
     }
   }
