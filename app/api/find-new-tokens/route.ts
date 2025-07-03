@@ -11,13 +11,13 @@ export async function GET() {
   let tradeCount = 0;
 
   for (const token of pools) {
-    const alreadyTracked = await isTokenAlreadyTracked(token.address);
+    const alreadyTracked = await isTokenAlreadyTracked(token.tokenAddress); // <---
     if (alreadyTracked) continue;
 
     const decision = await decideTrade(token, "M0");
     if (decision) {
-      console.log(`✅ PAPER-TRADE für ${token.symbol}`);
-      await trackTokenInRedis(token.address, decision); // Speichert Entscheidung
+      console.log(`✅ PAPER-TRADE für ${token.tokenSymbol}`);
+      await trackTokenInRedis(token.tokenAddress, decision); // <---
       tradeCount++;
     }
   }
