@@ -1,6 +1,6 @@
 export async function fetchNewRaydiumPools(): Promise<any[]> {
   try {
-    const response = await fetch("https://metis-api.solana.pink/new-pools");
+    const response = await fetch("https://api.metis.solana.pink/api/new-pools");
     const data = await response.json();
 
     if (!Array.isArray(data)) {
