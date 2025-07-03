@@ -1,35 +1,52 @@
-import { decideTrade } from "@/agent/trade-engine";
+import { NextResponse } from "next/server";
 import { fetchNewRaydiumPools } from "@/lib/helius-raydium";
-import { isTokenAlreadyTracked, trackTokenInRedis } from "@/lib/redis";
+import { decideTrade } from "@/agent/trade-engine";
 import { isHoneypot } from "@/lib/honeypotCheck";
+import { trackTokenInRedis, isTokenAlreadyTracked } from "@/lib/redis";
+import { sendTelegramMessage } from "@/lib/telegram";
 
 export async function GET() {
-  console.log("[HELIUS-LISTENER] getriggert via /agent-tick");
+  try {
+    const pools = await fetchNewRaydiumPools();
 
-  const tokens = await fetchNewRaydiumPools();
-  let newTrades = 0;
-
-  for (const token of tokens) {
-    const alreadyTracked = await isTokenAlreadyTracked(token.address);
-    if (alreadyTracked) continue;
-
-    const honeypot = await isHoneypot(token.address);
-    if (honeypot) {
-      console.log(`⛔ BLOCKIERT (HONEYPOT): ${token.symbol}`);
-      continue; // ✅ jetzt korrekt
+    if (!pools || pools.length === 0) {
+      return NextResponse.json({ success: true, message: "Keine neuen Pools" });
     }
 
-    const tradeDecision = await decideTrade(token, "M0");
+    let newTrades = 0;
 
-    if (tradeDecision) {
-      console.log(`✅ Paper-Trade für ${token.symbol} ausgelöst.`);
-      await trackTokenInRedis(token.address, token); // ✅ nicht doppelt ausführen
-      newTrades++;
+    for (const pool of pools) {
+      const { tokenAddress, tokenSymbol, tokenName } = pool;
+
+      // Doppel-Check
+      const alreadyTracked = await isTokenAlreadyTracked(tokenAddress);
+      if (alreadyTracked) continue;
+
+      // Honeypot-Schutz
+      const isTrap = await isHoneypot(tokenAddress);
+      if (isTrap) continue;
+
+      // Entscheidungslogik
+      const decision = await decideTrade({
+        address: tokenAddress,
+        symbol: tokenSymbol,
+        name: tokenName,
+      });
+
+      if (decision?.shouldBuy) {
+        await sendTelegramMessage(`📈 Paper-Trade für $${tokenSymbol} ausgelöst`);
+        await trackTokenInRedis(tokenAddress, decision);
+        newTrades++;
+      }
     }
+
+    return NextResponse.json({
+      success: true,
+      message: `${newTrades} neue Trades ausgelöst`,
+    });
+
+  } catch (err: any) {
+    console.error("[AGENT-TICK ERROR]", err);
+    return NextResponse.json({ success: false, error: err?.message || "Unbekannter Fehler" }, { status: 500 });
   }
-
-  return new Response(
-    `Listener durchlaufen – ${newTrades} neue Paper-Trades gestartet.`,
-    { status: 200 }
-  );
 }
