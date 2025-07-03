@@ -34,7 +34,7 @@ export async function GET() {
         category: "moonshot"
       }, "M1");
 
-      if (decision?.shouldBuy) {
+      if (decision) {
         await sendTelegramMessage(`📈 Paper-Trade für $${tokenSymbol} ausgelöst`);
         await trackTokenInRedis(tokenAddress, decision);
         newTrades++;

@@ -1,8 +1,8 @@
 // app/api/find-new-tokens/route.ts
+
 import { decideTrade } from "@/agent/trade-engine";
 import { fetchNewRaydiumPools } from "@/lib/helius-raydium";
 import { isTokenAlreadyTracked, trackTokenInRedis } from "@/lib/redis";
-import { fetchRecentRaydiumTokens } from "@/lib/token-fetcher";
 
 export async function GET() {
   console.log("[LISTENER] Starte Pool-Scan");
@@ -11,17 +11,16 @@ export async function GET() {
   let tradeCount = 0;
 
   for (const token of pools) {
-    const alreadyTracked = await isTokenAlreadyTracked(tokenAddress);
+    const alreadyTracked = await isTokenAlreadyTracked(token.address);
     if (alreadyTracked) continue;
 
     const decision = await decideTrade(token, "M0");
     if (decision) {
       console.log(`✅ PAPER-TRADE für ${token.symbol}`);
-      await trackTokenInRedis(token.address, token); // Verhindert Dopplung
+      await trackTokenInRedis(token.address, decision); // Speichert Entscheidung
       tradeCount++;
     }
   }
 
   return new Response(`✅ ${tradeCount} neue Paper-Trades`, { status: 200 });
 }
-

@@ -7,13 +7,6 @@ import { sendTelegramMessage } from "@/lib/telegram";
 import { telegramToggles } from "@/config/telegramToggles";
 import { notifyBuySignal, notifySellLoss, notifySellProfit } from "@/lib/telegram-events";
 
-const decision = await decideTrade({
-  address: tokenAddress,
-  symbol: tokenSymbol,
-  name: tokenName,
-  category: "moonshot",
-}, "M1");
-
 export async function decideTrade(token: any, currentStufe: string) {
   const { symbol, category } = token;
   const stufen = stufenConfig[currentStufe];
@@ -47,6 +40,7 @@ export async function decideTrade(token: any, currentStufe: string) {
       maxSlippage: stufen.maxSlippage,
       police: decidePolice(token.category, numericScore, boost),
       reinvestStufe: currentStufe,
+      shouldBuy: true // Optional, falls in route.ts genutzt
     };
   }
 
