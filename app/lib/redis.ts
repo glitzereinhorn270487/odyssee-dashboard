@@ -1,10 +1,10 @@
 // lib/redis.ts
 import Redis from "ioredis";
 
-const redis = new Redis(process.env.REDIS_URL! {
+const redis = new Redis(process.env.REDIS_URL! 
   maxRetriesPerRequest: 5,
   enableOfflineQueue: false,
-});
+);
 
 export async function isTokenAlreadyTracked(token: string): Promise<boolean> {
   const result = await redis.get(`live:${token}`);
