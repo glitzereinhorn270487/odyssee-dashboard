@@ -1,18 +1,61 @@
-export async function fetchNewRaydiumPools(): Promise<any[]> {
-  try {
-    const res = await fetch("https://metis-api.vercel.app/api/new-pools");
-    const contentType = res.headers.get("content-type");
+// app/lib/helius-raydium.ts
+const HELIUS_API_KEY = process.env.HELIUS_API_KEY!;
+const HELIUS_URL = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
 
-    if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
-    if (!contentType?.includes("application/json")) {
-      const text = await res.text();
-      throw new Error("Kein JSON: " + text.slice(0, 100)); // nur die ersten 100 Zeichen
-    }
+interface RaydiumPool {
+  tokenAddress: string;
+  tokenSymbol: string;
+  tokenName: string;
+  poolAddress: string;
+  timestamp: number;
+}
 
-    const data = await res.json();
-    return data || [];
-  } catch (error) {
-    console.error("[HELIUS/METIS] Fehler beim Pool-Fetch:", error);
-    return [];
+export async function fetchNewRaydiumPools(): Promise<RaydiumPool[]> {
+  const now = Math.floor(Date.now() / 1000);
+  const tenMinutesAgo = now - 600;
+
+  const body = {
+    accountType: "TOKEN_SWAP",
+    before: 0,
+    limit: 20,
+    displayOptions: {
+      showHumanReadableTypes: true,
+      showMetadata: true,
+    },
+    sortDirection: "DESCENDING",
+    commitment: "finalized",
+    timestamp: {
+      from: tenMinutesAgo,
+      to: now,
+    },
+  };
+
+  const response = await fetch(`${HELIUS_URL}/v0/addresses/activity`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Helius API Error: ${response.status}`);
   }
+
+  const json = await response.json();
+
+  const pools = json
+    .filter((entry: any) => entry.type === "SWAP" && entry.tokenTransfers?.length >= 2)
+    .map((entry: any) => {
+      const token = entry.tokenTransfers[1]; // meistens das "gekaufte" Token
+      return {
+        tokenAddress: token.mint,
+        tokenSymbol: token.symbol || "UNKNOWN",
+        tokenName: token.tokenName || "Unbenannt",
+        poolAddress: entry.signature,
+        timestamp: entry.timestamp,
+      };
+    });
+
+  return pools;
 }
