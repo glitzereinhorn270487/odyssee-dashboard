@@ -1,6 +1,6 @@
 // next.config.ts
 const nextConfig = {
-  serverExternalPackages: ["ioredis"],
+  serverExternalPackages: ["@/lib/redis"],
 };
 
 export default nextConfig;

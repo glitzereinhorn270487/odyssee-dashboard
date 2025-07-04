@@ -1,4 +1,10 @@
-import { redis } from "@/lib/redis";
+import { getRedisValue, setRedisValue } from "@/lib/redis";
+
+const alreadyTracked = await getRedisValue(`live:${tokenAddress}`);
+if (alreadyTracked) return;
+
+await setRedisValue(`live:${tokenAddress}`, tradeData);
+
 
 export async function GET() {
   try {

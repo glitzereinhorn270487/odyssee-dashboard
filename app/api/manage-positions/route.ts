@@ -1,6 +1,12 @@
 // app/api/manage-positions/route.ts
 import { NextResponse } from "next/server";
-import { redis, isTokenAlreadyTracked, trackTokenInRedis } from "@/lib/redis";
+import { getRedisValue, setRedisValue } from "@/lib/redis";
+
+const alreadyTracked = await getRedisValue(`live:${tokenAddress}`);
+if (alreadyTracked) return;
+
+await setRedisValue(`live:${tokenAddress}`, tradeData);
+
 import { getLivePrice, checkSellRules } from "@/lib/price-manager";
 import { sendTelegramMessage } from "@/lib/telegram";
 

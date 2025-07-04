@@ -1,16 +1,23 @@
-// lib/redis.ts
-import Redis from "ioredis";
+// app/lib/redis.ts
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL!;
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
 
-export const redis = new Redis(process.env.REDIS_URL!, {
-  maxRetriesPerRequest: 5,
-  enableOfflineQueue: false,
-});
+export async function getRedisValue(key: string): Promise<string | null> {
+  const res = await fetch(`${UPSTASH_URL}/get/${key}`, {
+    headers: {
+      Authorization: `Bearer ${UPSTASH_TOKEN}`,
+    },
+  });
 
-export async function isTokenAlreadyTracked(token: string): Promise<boolean> {
-  const result = await redis.get(`live:${token}`);
-  return !!result;
+  const data = await res.json();
+  return data.result ?? null;
 }
 
-export async function trackTokenInRedis(token: string, data: any): Promise<void> {
-  await redis.set(`live:${token}`, JSON.stringify(data));
+export async function setRedisValue(key: string, value: any): Promise<void> {
+  await fetch(`${UPSTASH_URL}/set/${key}/${encodeURIComponent(JSON.stringify(value))}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${UPSTASH_TOKEN}`,
+    },
+  });
 }
