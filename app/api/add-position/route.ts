@@ -1,5 +1,5 @@
 // app/api/add-position/route.ts
-import redis from "@/lib/redis";
+import redis from "/vercel/path0/app/lib/redis";
 import { telegramToggles } from "@/config/telegramToggles";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { sendSellGain, sendSellLoss } from "@/lib/telegram-events";
