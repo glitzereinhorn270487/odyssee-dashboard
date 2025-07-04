@@ -1,22 +1,26 @@
 import { getRedisValue, setRedisValue } from "@/lib/redis";
 
-const alreadyTracked = await getRedisValue(`live:${tokenAddress}`);
-if (alreadyTracked) return;
-
-await setRedisValue(`live:${tokenAddress}`, tradeData);
-
+// Beispieltoken – kannst du später dynamisch ersetzen
+const tokenAddress = "abc123";
+const tradeData = {
+  symbol: "EXAMPLE",
+  score: 97,
+  timestamp: Date.now(),
+};
 
 export async function GET() {
   try {
-    await redis.set("ping", "pong");
-    const val = await redis.get("ping");
-    return new Response(JSON.stringify({ success: true, value: val }), {
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (e: any) {
-    return new Response(JSON.stringify({ success: false, error: e.message }), {
+    const alreadyTracked = await getRedisValue(`live:${tokenAddress}`);
+    if (alreadyTracked) {
+      return new Response("🚫 Schon getrackt", { status: 200 });
+    }
+
+    await setRedisValue(`live:${tokenAddress}`, tradeData);
+    return new Response("✅ Erfolgreich gespeichert", { status: 200 });
+  } catch (error: any) {
+    console.error("[REDIS-TEST-ERROR]", error);
+    return new Response(`❌ Fehler: ${error.message || "Unbekannter Fehler"}`, {
       status: 500,
-      headers: { "Content-Type": "application/json" },
     });
   }
 }
