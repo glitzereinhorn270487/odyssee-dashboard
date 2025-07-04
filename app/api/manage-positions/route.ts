@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 import { getRedisValue, setRedisValue } from "@/lib/redis";
 
 const alreadyTracked = await getRedisValue(`live:${tokenAddress}`);
-if (alreadyTracked) return;
+if (alreadyTracked) {
+  return new Response("🚫 Bereits getrackt", { status: 200 });
+}
 
 await setRedisValue(`live:${tokenAddress}`, tradeData);
 
