@@ -1,6 +1,6 @@
 // app/lib/helius-raydium.ts
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY!;
-const HELIUS_URL = `https://api.helius.xyz/v0/addresses{address}/transactions/?api-key=1fa0561c-8411-49f1-ae76-f49a1f2c8d79`;
+const HELIUS_URL = `https://api.helius.xyz/v0/addresses{WalletAddress}/transactions/?api-key=1fa0561c-8411-49f1-ae76-f49a1f2c8d79`;
 
 interface RaydiumPool {
   tokenAddress: string;
