@@ -1,5 +1,5 @@
 // lib/redis.ts
-import Redis from "@upstash/redis";
+import Redis from "redis";
 
 const redis = new Redis(process.env.REDIS_URL!, {
   maxRetriesPerRequest: 5,
