@@ -46,6 +46,17 @@ export async function delRedisKey(key: string): Promise<void> {
   }
 }
 
+// Prüft, ob ein Token bereits in Redis gespeichert ist
+export async function isTokenAlreadyTracked(tokenAddress: string): Promise<boolean> {
+  const result = await getRedisValue(`live:${tokenAddress}`);
+  return !!result;
+}
+
+// Speichert das Token-Objekt unter seinem Schlüssel
+export async function trackTokenInRedis(tokenAddress: string, data: any): Promise<void> {
+  await setRedisValue(`live:${tokenAddress}`, data);
+}
+
 export async function getAllKeys(): Promise<string[]> {
   try {
     const response = await fetch(`${REST_URL}/keys/*`, {
