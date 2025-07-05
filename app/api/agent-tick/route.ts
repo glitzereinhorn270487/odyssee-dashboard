@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchNewRaydiumPools } from "@/lib/helius-raydium";
 import { decideTrade } from "@/agent/trade-engine";
 import { isHoneypot } from "@/lib/honeypotCheck";
-import { trackTokenInRedis, isTokenAlreadyTracked } from "@/lib/redis";
+import { getRedisValue, setRedisValue } from "@/lib/redis"; // Upstash Redis REST
 import { sendTelegramMessage } from "@/lib/telegram";
 
 export async function GET() {
@@ -18,8 +18,8 @@ export async function GET() {
     for (const pool of pools) {
       const { tokenAddress, tokenSymbol, tokenName } = pool;
 
-      // Doppel-Check
-      const alreadyTracked = await isTokenAlreadyTracked(tokenAddress);
+      // Doppel-Check via Upstash
+      const alreadyTracked = await getRedisValue(`live:${tokenAddress}`);
       if (alreadyTracked) continue;
 
       // Honeypot-Schutz
@@ -31,12 +31,12 @@ export async function GET() {
         address: tokenAddress,
         symbol: tokenSymbol,
         name: tokenName,
-        category: "moonshot"
+        category: "moonshot",
       }, "M1");
 
-      if (decision) {
+      if (decision?.shouldBuy) {
         await sendTelegramMessage(`📈 Paper-Trade für $${tokenSymbol} ausgelöst`);
-        await trackTokenInRedis(tokenAddress, decision);
+        await setRedisValue(`live:${tokenAddress}`, decision); // Nur speichern wenn Trade
         newTrades++;
       }
     }

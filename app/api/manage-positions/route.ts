@@ -1,22 +1,22 @@
 // app/api/manage-positions/route.ts
+
 import { NextResponse } from "next/server";
 import { getRedisValue, setRedisValue } from "@/lib/redis";
 
-const alreadyTracked = await getRedisValue(`live:${tokenAddress}`);
-if (alreadyTracked) {
-  return new Response("🚫 Bereits getrackt", { status: 200 });
-}
+export async function POST(req: Request) {
+  const body = await req.json();
+  const { tokenAddress, tradeData } = body;
 
-await setRedisValue(`live:${tokenAddress}`, tradeData);
+  if (!tokenAddress || !tradeData) {
+    return new NextResponse("❌ Ungültige Daten", { status: 400 });
+  }
 
-import { getLivePrice, checkSellRules } from "@/lib/price-manager";
-import { sendTelegramMessage } from "@/lib/telegram";
+  const alreadyTracked = await getRedisValue(`live:${tokenAddress}`);
+  if (alreadyTracked) {
+    return new NextResponse("[ALREADY_TRACKED]", { status: 200 });
+  }
 
-// Beispiel-Handler (du kannst deine eigene Logik hier weiter einsetzen)
-export async function GET() {
-  const testKey = "debug:test";
-  await redis.set(testKey, "It works!");
-  const value = await redis.get(testKey);
+  await setRedisValue(`live:${tokenAddress}`, tradeData);
 
-  return NextResponse.json({ success: true, value });
+  return new NextResponse("✅ Token erfolgreich gespeichert", { status: 200 });
 }

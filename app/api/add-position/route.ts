@@ -1,5 +1,5 @@
 // app/api/add-position/route.ts
-import { redis } from "/vercel/path0/app/lib/redis";
+import { setRedisValue, getRedisValue } from "@/lib/redis";
 import { telegramToggles } from "@/config/telegramToggles";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { sendSellGain, sendSellLoss } from "@/lib/telegram-events";
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     }
 
     // ✅ Redis speichern
-    await redis.set(`live:${data.token}`, JSON.stringify(data));
+    await setRedisValue(`live:${data.token}`, data);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

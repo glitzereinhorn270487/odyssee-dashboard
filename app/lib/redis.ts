@@ -1,30 +1,36 @@
-// app/lib/redis.ts
-const baseUrl = process.env.UPSTASH_REDIS_REST_URL!;
-const token = process.env.UPSTASH_REDIS_REST_TOKEN!;
+// lib/redis.ts
 
-export async function getRedisValue(key: string): Promise<any | null> {
-  const res = await fetch(`${baseUrl}/get/${key}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL!;
+const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
+
+export async function getRedisValue(key: string): Promise<any> {
+  const res = await fetch(`${REDIS_URL}/get/${key}`, {
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}` },
     cache: "no-store",
   });
 
   if (!res.ok) return null;
 
   const data = await res.json();
-  return data.result ?? null;
+  try {
+    return JSON.parse(data.result);
+  } catch {
+    return data.result;
+  }
 }
 
-export async function setRedisValue(key: string, value: any): Promise<boolean> {
-  const res = await fetch(`${baseUrl}/set/${key}`, {
+export async function setRedisValue(key: string, value: any): Promise<void> {
+  await fetch(`${REDIS_URL}/set/${key}/${encodeURIComponent(JSON.stringify(value))}`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify([value]),
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}` },
   });
+}
 
-  return res.ok;
+export async function isTokenAlreadyTracked(key: string): Promise<boolean> {
+  const val = await getRedisValue(key);
+  return val !== null && val !== undefined;
+}
+
+export async function trackTokenInRedis(key: string, value: any): Promise<void> {
+  await setRedisValue(key, value);
 }
