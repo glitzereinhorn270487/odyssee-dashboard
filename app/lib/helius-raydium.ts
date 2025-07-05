@@ -1,6 +1,7 @@
 // app/lib/helius-raydium.ts
+
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY!;
-const HELIUS_URL = `https://api.helius.xyz/v0/addresses/G4WaYDoB8huCBmWJ7roVK9q5p4N1LUET4rYpwCPmfPVs/transactions/?api-key=1fa0561c-8411-49f1-ae76-f49a1f2c8d79`;
+const WALLET_ADDRESS = "G4WaYDoB8huCBmWJ7roVK9q5p4N1LUET4rYpwCPmfPVs";
 
 interface RaydiumPool {
   tokenAddress: string;
@@ -13,6 +14,8 @@ interface RaydiumPool {
 export async function fetchNewRaydiumPools(): Promise<RaydiumPool[]> {
   const now = Math.floor(Date.now() / 1000);
   const tenMinutesAgo = now - 600;
+
+  const url = `https://api.helius.xyz/v0/addresses/${WALLET_ADDRESS}/transactions?api-key=${HELIUS_API_KEY}`;
 
   const body = {
     accountType: "TOKEN_SWAP",
@@ -30,7 +33,7 @@ export async function fetchNewRaydiumPools(): Promise<RaydiumPool[]> {
     },
   };
 
-  const response = await fetch(`${HELIUS_URL}/v0/addresses/activity`, {
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -47,7 +50,7 @@ export async function fetchNewRaydiumPools(): Promise<RaydiumPool[]> {
   const pools = json
     .filter((entry: any) => entry.type === "SWAP" && entry.tokenTransfers?.length >= 2)
     .map((entry: any) => {
-      const token = entry.tokenTransfers[1]; // meistens das "gekaufte" Token
+      const token = entry.tokenTransfers[1]; // meist das gekaufte Token
       return {
         tokenAddress: token.mint,
         tokenSymbol: token.symbol || "UNKNOWN",
