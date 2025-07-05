@@ -1,7 +1,13 @@
 // app/lib/helius-raydium.ts
 
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY!;
+if (!HELIUS_API_KEY) {
+  throw new Error("❌ HELIUS_API_KEY fehlt in der .env-Datei!");
+}
+
+const url = `https://api.helius.xyz/v0/addresses/${WALLET_ADDRESS}/transactions?api-key=${HELIUS_API_KEY}`;
 const WALLET_ADDRESS = "G4WaYDoB8huCBmWJ7roVK9q5p4N1LUET4rYpwCPmfPVs";
+
 
 interface RaydiumPool {
   tokenAddress: string;
@@ -15,7 +21,6 @@ export async function fetchNewRaydiumPools(): Promise<RaydiumPool[]> {
   const now = Math.floor(Date.now() / 1000);
   const tenMinutesAgo = now - 600;
 
-  const url = `https://api.helius.xyz/v0/addresses/${WALLET_ADDRESS}/transactions?api-key=${HELIUS_API_KEY}`;
 
   const body = {
     accountType: "TOKEN_SWAP",
