@@ -1,47 +1,57 @@
 import { NextResponse } from "next/server";
 import { fetchNewRaydiumPools } from "@/lib/helius-raydium";
+import { isTokenAlreadyTracked, trackTokenInRedis } from "@/lib/redis";
 import { decideTrade } from "@/agent/trade-engine";
-import { isHoneypot } from "@/lib/honeypotCheck";
-import { getRedisValue, setRedisValue } from "@/lib/redis"; // Upstash Redis REST
 import { sendTelegramMessage } from "@/lib/telegram";
+
+// Globale Variable zum Schutz vor zu häufiger Ausführung (serverless-safe)
+declare global {
+  var lastCallTime: number | undefined;
+}
 
 export async function GET() {
   try {
-    const pools = await fetchNewRaydiumPools();
+    const now = Date.now();
+    const lastCall = globalThis.lastCallTime || 0;
+
+    if (now - lastCall < 15000) {
+      return NextResponse.json(
+        { success: false, message: "Rate limit schützt (15 Sek. Pause)" },
+        { status: 429 }
+      );
+    }
+
+    globalThis.lastCallTime = now;
+
+    console.log("[AGENT-TICK] Pool-Scan läuft...");
+
+    const pools = await retryWithBackoff(() => fetchNewRaydiumPools(), 3);
 
     if (!pools || pools.length === 0) {
       return NextResponse.json({ success: true, message: "Keine neuen Pools" });
     }
 
     let newTrades = 0;
-      const lastCall = globalThis.lastCallTime || 0;
-const now = Date.now();
-if (now - lastCall < 30000) {
-  return NextResponse.json({ success: false, message: "Rate limit schützt" }, { status: 429 });
-}
-globalThis.lastCallTime = now;
+
     for (const pool of pools) {
       const { tokenAddress, tokenSymbol, tokenName } = pool;
 
-      // Doppel-Check via Upstash
-      const alreadyTracked = await getRedisValue(`live:${tokenAddress}`);
+      const alreadyTracked = await isTokenAlreadyTracked(`live:${tokenAddress}`);
       if (alreadyTracked) continue;
 
-      // Honeypot-Schutz
-      const isTrap = await isHoneypot(tokenAddress);
-      if (isTrap) continue;
-
-      // Entscheidungslogik
-      const decision = await decideTrade({
-        address: tokenAddress,
-        symbol: tokenSymbol,
-        name: tokenName,
-        category: "moonshot",
-      }, "M1");
+      const decision = await decideTrade(
+        {
+          address: tokenAddress,
+          symbol: tokenSymbol,
+          name: tokenName,
+          category: "moonshot",
+        },
+        "M1"
+      );
 
       if (decision?.shouldBuy) {
         await sendTelegramMessage(`📈 Paper-Trade für $${tokenSymbol} ausgelöst`);
-        await setRedisValue(`live:${tokenAddress}`, decision); // Nur speichern wenn Trade
+        await trackTokenInRedis(`live:${tokenAddress}`, decision);
         newTrades++;
       }
     }
@@ -50,9 +60,32 @@ globalThis.lastCallTime = now;
       success: true,
       message: `${newTrades} neue Trades ausgelöst`,
     });
+  } catch (error: any) {
+    console.error("[AGENT-TICK ERROR]", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error?.message || "Unbekannter Fehler",
+      },
+      { status: 500 }
+    );
+  }
+}
 
+// 🔁 Retry-Funktion bei 429-Fehlern
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  delay = 1000
+): Promise<T> {
+  try {
+    return await fn();
   } catch (err: any) {
-    console.error("[AGENT-TICK ERROR]", err);
-    return NextResponse.json({ success: false, error: err?.message || "Unbekannter Fehler" }, { status: 500 });
+    if (retries > 0 && err.message?.includes("429")) {
+      console.warn(`[Retry] Rate limit, versuche erneut in ${delay}ms...`);
+      await new Promise((res) => setTimeout(res, delay));
+      return retryWithBackoff(fn, retries - 1, delay * 2);
+    }
+    throw err;
   }
 }
