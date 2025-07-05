@@ -1,36 +1,60 @@
-// lib/redis.ts
+// lib/redis.ts – Upstash REST-kompatibel
 
-const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL!;
-const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
+const REST_URL = process.env.UPSTASH_REDIS_REST_URL!;
+const REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
 
-export async function getRedisValue(key: string): Promise<any> {
-  const res = await fetch(`${REDIS_URL}/get/${key}`, {
-    headers: { Authorization: `Bearer ${REDIS_TOKEN}` },
-    cache: "no-store",
-  });
+if (!REST_URL || !REST_TOKEN) {
+  throw new Error("❌ Redis-Konfigurationswerte fehlen in der .env-Datei!");
+}
 
-  if (!res.ok) return null;
-
-  const data = await res.json();
+export async function getRedisValue(key: string): Promise<any | null> {
   try {
-    return JSON.parse(data.result);
-  } catch {
-    return data.result;
+    const response = await fetch(`${REST_URL}/get/${key}`, {
+      headers: { Authorization: `Bearer ${REST_TOKEN}` },
+    });
+    const data = await response.json();
+    return data.result ?? null;
+  } catch (error) {
+    console.error("[REDIS-GET FEHLER]", error);
+    return null;
   }
 }
 
 export async function setRedisValue(key: string, value: any): Promise<void> {
-  await fetch(`${REDIS_URL}/set/${key}/${encodeURIComponent(JSON.stringify(value))}`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${REDIS_TOKEN}` },
-  });
+  try {
+    await fetch(`${REST_URL}/set/${key}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${REST_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ value }),
+    });
+  } catch (error) {
+    console.error("[REDIS-SET FEHLER]", error);
+  }
 }
 
-export async function isTokenAlreadyTracked(key: string): Promise<boolean> {
-  const val = await getRedisValue(key);
-  return val !== null && val !== undefined;
+export async function delRedisKey(key: string): Promise<void> {
+  try {
+    await fetch(`${REST_URL}/del/${key}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${REST_TOKEN}` },
+    });
+  } catch (error) {
+    console.error("[REDIS-DEL FEHLER]", error);
+  }
 }
 
-export async function trackTokenInRedis(key: string, value: any): Promise<void> {
-  await setRedisValue(key, value);
+export async function getAllKeys(): Promise<string[]> {
+  try {
+    const response = await fetch(`${REST_URL}/keys/*`, {
+      headers: { Authorization: `Bearer ${REST_TOKEN}` },
+    });
+    const data = await response.json();
+    return data.result ?? [];
+  } catch (error) {
+    console.error("[REDIS-KEYS FEHLER]", error);
+    return [];
+  }
 }
