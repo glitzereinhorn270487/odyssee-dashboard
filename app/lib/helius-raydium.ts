@@ -5,8 +5,9 @@ if (!HELIUS_API_KEY) {
   throw new Error("❌ HELIUS_API_KEY fehlt in der .env-Datei!");
 }
 
-const url = `https://api.helius.xyz/v0/addresses/${WALLET_ADDRESS}/transactions?api-key=${HELIUS_API_KEY}`;
 const WALLET_ADDRESS = "G4WaYDoB8huCBmWJ7roVK9q5p4N1LUET4rYpwCPmfPVs";
+const url = `https://api.helius.xyz/v0/addresses/${WALLET_ADDRESS}/transactions?api-key=${HELIUS_API_KEY}`;
+
 
 
 interface RaydiumPool {
