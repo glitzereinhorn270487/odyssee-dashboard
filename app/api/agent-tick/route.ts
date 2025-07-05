@@ -14,7 +14,12 @@ export async function GET() {
     }
 
     let newTrades = 0;
-
+      const lastCall = globalThis.lastCallTime || 0;
+const now = Date.now();
+if (now - lastCall < 30000) {
+  return NextResponse.json({ success: false, message: "Rate limit schützt" }, { status: 429 });
+}
+globalThis.lastCallTime = now;
     for (const pool of pools) {
       const { tokenAddress, tokenSymbol, tokenName } = pool;
 
