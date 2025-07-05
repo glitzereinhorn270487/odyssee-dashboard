@@ -8,9 +8,6 @@ if (!HELIUS_API_KEY) {
 }
 
 const WALLET_ADDRESS = "G4WaYDoB8huCBmWJ7roVK9q5p4N1LUET4rYpwCPmfPVs";
-const url = `https://api.helius.xyz/v0/addresses/${WALLET_ADDRESS}/transactions?api-key=${HELIUS_API_KEY}`;
-
-
 
 interface RaydiumPool {
   tokenAddress: string;
@@ -41,32 +38,32 @@ export async function fetchNewRaydiumPools(): Promise<RaydiumPool[]> {
     },
   };
 
-  return await retryWithBackoff(async () => {
-    const response = await fetch(url, {
+  const response = await retryWithBackoff(() =>
+    fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
+    })
+  );
+
+  if (!response.ok) {
+    throw new Error(`Helius API Error: ${response.status}`);
+  }
+
+  const json = await response.json();
+
+  return json
+    .filter((entry: any) => entry.type === "SWAP" && entry.tokenTransfers?.length >= 2)
+    .map((entry: any) => {
+      const token = entry.tokenTransfers[1];
+      return {
+        tokenAddress: token.mint,
+        tokenSymbol: token.symbol || "UNKNOWN",
+        tokenName: token.tokenName || "Unbenannt",
+        poolAddress: entry.signature,
+        timestamp: entry.timestamp,
+      };
     });
-
-    if (!response.ok) {
-      throw new Error(`Helius API Error: ${response.status}`);
-    }
-
-    const json = await response.json();
-
-    return json
-      .filter((entry: any) => entry.type === "SWAP" && entry.tokenTransfers?.length >= 2)
-      .map((entry: any) => {
-        const token = entry.tokenTransfers[1];
-        return {
-          tokenAddress: token.mint,
-          tokenSymbol: token.symbol || "UNKNOWN",
-          tokenName: token.tokenName || "Unbenannt",
-          poolAddress: entry.signature,
-          timestamp: entry.timestamp,
-        };
-      });
-  });
 }
