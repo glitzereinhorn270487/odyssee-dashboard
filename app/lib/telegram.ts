@@ -1,7 +1,7 @@
 // lib/telegram.ts
 export async function sendTelegramMessage(message: string) {
-  const TELEGRAM_BOT_TOKEN = process.env.7633687305:AAEvjchGHkQAB0uX8jHLLK-QuMiyMOaPiSQ;
-  const TELEGRAM_CHAT_ID = process.env.7590980638;
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
     console.warn("Telegram-Daten fehlen in .env");
