@@ -1,7 +1,7 @@
 // app/lib/crawler/crawler.ts
 import { ScoreX } from "@/lib/utils/scorex";
 import { addWalletToDB, removeWalletFromDB } from "@/lib/utils/database";
-import { fetchRecentTransactions } from "@/lib/helius"; // oder dein aktueller Import
+import { fetchRecentTransactions } from "@/lib/helius-logic"; // oder dein aktueller Import
 import { debounce } from "@/lib/utils/debounce"; // wird unten noch erklärt
 
 export async function runCrawler() {
