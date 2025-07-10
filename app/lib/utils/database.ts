@@ -9,4 +9,26 @@ export const Database = {
     console.log(`[Database] ${wallet} aus ${type} entfernt.`);
     return true;
   },
+  export async function addWalletToDB(wallet: any, category: string) {
+  // Beispielhafte Speicherung – passe ggf. für deine Redis-Struktur an
+  await fetch(`${process.env.BASE_URL}/api/add-wallet`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ wallet, category }),
+  });
+}
+
+export async function removeWalletFromDB(wallet: string, category: string) {
+  // Beispielhafte Entfernung – passe ggf. für deine Redis-Struktur an
+  await fetch(`${process.env.BASE_URL}/api/remove-wallet`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ wallet, category }),
+  });
+}
+
 };
