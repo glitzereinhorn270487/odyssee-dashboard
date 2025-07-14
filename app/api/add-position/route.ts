@@ -3,10 +3,16 @@ import { setRedisValue, getRedisValue } from "@/lib/redis";
 import { telegramToggles } from "@/config/telegramToggles";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { sendSellGain, sendSellLoss } from "@/lib/telegram-events";
+import { ScoreX } from "@lib/utils/scorex";
 
-export async function POST(req: Request) {
   try {
     const data = await req.json();
+
+    // 🔍 Automatische ScoreX-Auswertung
+const scoreXResult = await ScoreX.evaluate(data.wallet, data.txs || []);
+const calculatedScore = scoreXResult?.newData?.score || 0;
+const calculatedBoosts = scoreXResult?.newData?.boosts || [];
+
 
     // ✅ Prüfung auf gültige Daten
     if (!data.token || !data.wallet || !data.cluster) {
@@ -18,6 +24,15 @@ export async function POST(req: Request) {
         },
       });
     }
+    // ScoreX-Ergebnisse in Daten integrieren
+    data.scoreX = calculatedScore;
+    data.boosts = calculatedBoosts;
+
+    {
+      "token": "XYZ",
+      "scoreX": 92,
+      "boosts": ["Insider", "Momentum", "LetWinnersRun"]
+    }
 
     // 🧠 Telegram-Benachrichtigungen
     const tokenSymbol = data.token?.toUpperCase?.() || "???";
@@ -25,8 +40,8 @@ export async function POST(req: Request) {
     const lossPercent = data.loss || 50;  // Beispielwert
 
     if (telegramToggles.global && telegramToggles.tradeSignals) {
-      await sendTelegramMessage(`📈 KAUFSIGNAL: $${tokenSymbol}`);
-    }
+      await sendTelegramMessage(`📈 KAUFSIGNAL: $${tokenSymbol} | ScoreX: ${calculatedScore} | Boosts: ${calculatedBoosts.join(", ")}`);
+
 
     if (telegramToggles.global && telegramToggles.tradePerformance) {
       await sendSellGain(tokenSymbol, gainPercent); // Gewinn
