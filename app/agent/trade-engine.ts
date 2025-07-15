@@ -14,7 +14,7 @@ export async function decideTrade(token: any, currentStufe: string) {
   const risk = await getRiskLevel(token);
   const score = await getTokenScore(token);
   const boostScore = await getBoostScore(token);
-  const boosts = token.boosts ?? [];, // wichtige Änderung
+  const boosts = token.boosts ?? []; // wichtige Änderung
   const numericScore: number = typeof score === "number" ? score : score.baseScore;
 
   const shouldBuy = numericScore >= stufen.minScore && risk <= stufen.maxRisk;
