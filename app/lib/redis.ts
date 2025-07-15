@@ -7,6 +7,17 @@ if (!REST_URL || !REST_TOKEN) {
   throw new Error("❌ Redis-Konfigurationswerte fehlen in der .env-Datei!");
 }
 
+import { getRedisValue } from "@/lib/redis";
+
+export async function getMonitoredWallets() {
+  const raw = await getRedisValue("monitored_wallets");
+  try {
+    return JSON.parse(raw || "[]");
+  } catch {
+    return [];
+  }
+}
+
 export async function getRedisValue(key: string): Promise<any | null> {
   try {
     const response = await fetch(`${REST_URL}/get/${key}`, {
@@ -37,12 +48,6 @@ export async function setRedisValue(key: string, value: any): Promise<void> {
   }
 }
 
-export async function getMonitoredWallets() {
-  return [
-    { address: "abc123...", cluster: "SmartMoney" },
-    { address: "def456...", cluster: "Insider" },
-  ];
-}
 
 export async function removeWalletFromDB(address: string, cluster: string) {}
 
