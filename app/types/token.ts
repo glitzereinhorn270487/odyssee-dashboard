@@ -17,7 +17,6 @@ export interface TradeCandidate {
   symbol: string;
   name: string;
   candidate?: string;
-  className="text-sm text-muted">Boosts: (wird geladen…)
 
   // ... weitere Felder je nach Bedarf
 }
