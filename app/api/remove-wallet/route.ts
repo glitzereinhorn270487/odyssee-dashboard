@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
 
     const key = `wallets:${category}`;
-    await redis.hdel(key, wallet);
+    await getRedisValue(wallet);
 
     return NextResponse.json({ success: true });
   } catch (error) {
