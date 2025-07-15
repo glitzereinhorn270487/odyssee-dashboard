@@ -57,7 +57,7 @@ export async function addWalletToDB(address: string, data: WalletData) {
     console.warn("[REDIS-WARNUNG] Ungültige Datenstruktur beim Speichern!");
     return;
   }
-await setRedisValue(`wallet:${address}`, JSON.stringify(data));
+await setRedisValue(`wallet:${address}`, data); //nicht manuell serialisieren
 
 }
 
