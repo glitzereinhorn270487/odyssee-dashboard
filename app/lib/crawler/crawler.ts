@@ -13,7 +13,7 @@ export async function runCrawler() {
       continue; // Frühzeitig überspringen, wenn gebounced
     }
 
-    const txs = await fetchRecentTransactions(wallet.address);
+    const txs = []; // Dummy-Leere Liste
     let evaluation = await ScoreX.evaluate(wallet.address, txs);
 
     if (evaluation.shouldRemove) {
