@@ -40,6 +40,7 @@ export async function getMonitoredWallets() {
     { address: "def456...", cluster: "Insider" },
   ];
 }
+export async function removeWalletFromDB(address: string, cluster: string) { }
 
 export async function delRedisKey(key: string): Promise<void> {
   try {

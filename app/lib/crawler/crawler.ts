@@ -12,7 +12,7 @@ export async function runCrawler() {
 
     const evaluation = await ScoreX.evaluate(wallet.address, txs);
     if (evaluation.shouldRemove) {
-      await removeWalletFromDB(wallet.address);
+      await removeWalletFromDB(wallet.address, wallet.cluster);
     } else if (evaluation.shouldUpdate) {
       await addWalletToDB(wallet.address, evaluation.newData);
     }
