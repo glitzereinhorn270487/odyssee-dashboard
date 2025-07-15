@@ -49,6 +49,14 @@ export interface WalletData {
 }
 
 export async function addWalletToDB(address: string, data: WalletData) {
+    if (
+    typeof data.alphaScore !== "number" ||
+    typeof data.winRate !== "number" ||
+    typeof data.note !== "string"
+  ) {
+    console.warn("[REDIS-WARNUNG] Ungültige Datenstruktur beim Speichern!");
+    return;
+  }
 await setRedisValue(`wallet:${address}`, JSON.stringify(data));
 
 }

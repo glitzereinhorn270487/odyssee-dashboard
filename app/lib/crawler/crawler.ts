@@ -13,15 +13,15 @@ export async function runCrawler() {
     let evaluation = await ScoreX.evaluate(wallet.address, txs);
     if (evaluation.shouldRemove) {
       await removeWalletFromDB(wallet.address, wallet.cluster);
-    } else if (evaluation.shouldUpdate) {
-      evaluation = {
-  shouldUpdate: true,
-  shouldRemove: false,
-  newData: {
-    alphaScore: 87.3,
-    winRate: 0.92,
+    if (evaluation.shouldUpdate) {
+  evaluation.newData = {
+    alphaScore: 87.3,  //number
+    winRate: 0.92,     //number
     note: "Top performance in last 24h"
-  }
+  };
+  await addWalletToDB(wallet.address, evaluation.newData);
+}
+
 }
 
       await addWalletToDB(wallet.address, evaluation.newData);

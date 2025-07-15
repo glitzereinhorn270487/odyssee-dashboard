@@ -15,10 +15,10 @@ export const ScoreX = {
     return {
       shouldRemove,
       shouldUpdate,
-      newData: {
-        alphaScore: (Math.random() * 10).toFixed(2),
-        winRate: (0.8 + Math.random() * 0.2).toFixed(2),
-        note: "Auto-Update durch Crawler",
+      newData: = {
+        alphaScore: 87.3, //number
+        winRate: 0.92, //number
+        note: "Top performance in last 24h",
       },
     };
   },
