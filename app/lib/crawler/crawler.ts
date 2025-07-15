@@ -19,7 +19,8 @@ export async function runCrawler() {
     if (evaluation.shouldRemove) {
       await removeWalletFromDB(wallet.address, wallet.cluster);
     } else if (evaluation.shouldUpdate) {
-      await addWalletToDB(wallet.address, evaluation.newData);
+      await addWalletToDB(wallet.address, JSON.stringify(evaluation.newData));
+
     }
   }
 }
