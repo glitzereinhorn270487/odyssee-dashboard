@@ -24,12 +24,12 @@ export const ScoreX = {
 
 
     return {
-      shouldRemove,
-      shouldUpdate,
+      shouldRemove: false,
+      shouldUpdate: true,
       newData: {
-        alphaScore: 87.3, //number
+        alphaScore: 85, //number
         winRate: 0.92, //number
-        note: "Top performance in last 24h",
+        note: "Dummy-Testdaten erfolgreich ausgewertet",
       },
     };
   },

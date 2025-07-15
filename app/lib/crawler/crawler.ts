@@ -13,7 +13,11 @@ export async function runCrawler() {
       continue; // Frühzeitig überspringen, wenn gebounced
     }
 
-    const txs = []; // Dummy-Leere Liste
+    const txs = [
+      { amount: 1.23, token: "USDC", timestamp: Date.now() },
+      { amount: 4.56, token: "SOL", timestamp: Date.now() },
+    ]; // Fake-Daten für ScoreX-Test
+    console.log("[SCOREX-MOCK]", wallet, txs.length);
     let evaluation = await ScoreX.evaluate(wallet.address, txs);
 
     if (evaluation.shouldRemove) {
