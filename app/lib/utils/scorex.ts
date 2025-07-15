@@ -11,6 +11,17 @@ export const ScoreX = {
   async evaluate(address: string, txs: any[]) {
     const shouldRemove = Math.random() < 0.1;
     const shouldUpdate = Math.random() < 0.3;
+    console.log("[SCOREX-EVAL]", {
+      wallet,
+      txs: txs.length,
+      decision: {
+        shouldUpdate: true,
+        alphaScore: 91.2,
+        winRate: 0.84,
+        note: "Starke Trades letzte 12h",
+  },
+});
+
 
     return {
       shouldRemove,
