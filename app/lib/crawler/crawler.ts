@@ -10,7 +10,7 @@ export async function runCrawler() {
   for (const wallet of wallets) {
     const txs = await fetchRecentTransactions(wallet.address);
 
-    const evaluation = await ScoreX.evaluate(wallet.address, txs);
+    let evaluation = await ScoreX.evaluate(wallet.address, txs);
     if (evaluation.shouldRemove) {
       await removeWalletFromDB(wallet.address, wallet.cluster);
     } else if (evaluation.shouldUpdate) {
