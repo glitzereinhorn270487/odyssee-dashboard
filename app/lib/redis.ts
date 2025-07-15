@@ -21,6 +21,8 @@ export async function getRedisValue(key: string): Promise<any | null> {
 }
 
 export async function setRedisValue(key: string, value: any): Promise<void> {
+  const safeValue = typeof value === "string" ? value : JSON.stringify(value);
+
   try {
     await fetch(`${REST_URL}/set/${key}`, {
       method: "POST",
@@ -28,7 +30,7 @@ export async function setRedisValue(key: string, value: any): Promise<void> {
         Authorization: `Bearer ${REST_TOKEN}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ value: typeof value === "string" ? value : JSON.stringify(value) }),
+      body: JSON.stringify({ value: safeValue }),
     });
   } catch (error) {
     console.error("[REDIS-SET FEHLER]", error);
