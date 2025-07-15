@@ -14,4 +14,10 @@ export async function setRedisValue(key: string, value: any): Promise<void> {
   } catch (error) {
     console.error("[REDIS-SET FEHLER]", error);
   }
+  export {
+  getRedisValue,
+  isTokenAlreadyTracked,
+  trackTokenInRedis,
+  getMonitoredWallets,
+};
 }
