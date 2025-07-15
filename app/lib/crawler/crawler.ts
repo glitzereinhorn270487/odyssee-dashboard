@@ -17,10 +17,12 @@ export async function runCrawler() {
     let evaluation = await ScoreX.evaluate(wallet.address, txs);
 
     if (evaluation.shouldRemove) {
-      await addWalletToDB(wallet.address, JSON.stringify(evaluation.newData));
+      console.log("[CRAWLER] Entferne Wallet:", wallet.address);
+      await addWalletToDB(wallet.address, wallet.cluster);
 
 
     } else if (evaluation.shouldUpdate) {
+      console.log("[CRAWLER] Füge Wallet hinzu:", wallet.address);
       await addWalletToDB(wallet.address, JSON.stringify(evaluation.newData));
 
     }

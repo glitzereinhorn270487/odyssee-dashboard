@@ -56,8 +56,8 @@ export interface WalletData {
   note: string;
 }
 
-export async function addWalletToDB(address: string, data: WalletData) {
-  await setRedisValue(`wallet:${address}`, data);
+export async function addWalletToDB(address: string, data: string) {
+  await setRedisValue(`smartmoney:${address}`, data); // oder "insider:${address}", etc.
 }
 
 export async function delRedisKey(key: string): Promise<void> {
