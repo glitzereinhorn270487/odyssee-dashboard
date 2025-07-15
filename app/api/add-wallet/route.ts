@@ -1,7 +1,8 @@
 // app/api/add-wallet/route.ts
 
 import { NextResponse } from "next/server";
-import { redis } from "@/lib/redis";
+import { setRedisValue, getRedisValue } from "@/lib/redis"; // je nach dem was du brauchst
+
 
 export async function POST(req: Request) {
   try {

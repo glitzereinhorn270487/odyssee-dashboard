@@ -7,3 +7,10 @@ export const policyDecisionConfig = {
     scaling: false,
   },
 };
+export const decidePolice = (tokenData: any) => {
+  // Beispielhafte Logik (bitte später anpassen)
+  if (tokenData.boosts?.includes("LetWinnersRun")) {
+    return "Let-Winners-Run";
+  }
+  return "Default-Policy";
+};

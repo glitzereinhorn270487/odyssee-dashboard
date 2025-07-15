@@ -22,4 +22,8 @@ export async function fetchRecentRaydiumTokens(): Promise<any[]> {
     return [];
   }
 }
+export const fetchRecentTransactions = async (address: string) => {
+  // Placeholder – implementieren oder entfernen je nach Verwendung
+  return [];
+};
 
