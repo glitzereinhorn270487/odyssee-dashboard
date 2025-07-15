@@ -1,18 +1,14 @@
 // app/api/add-position/route.ts
-import { setRedisValue, getRedisValue } from "@/lib/redis";
+
+import { setRedisValue } from "@/lib/redis";
 import { telegramToggles } from "@/config/telegramToggles";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { sendSellGain, sendSellLoss } from "@/lib/telegram-events";
-import { ScoreX } from "@lib/utils/scorex";
+import { calculateScoreX } from "@/lib/utils/scorex";
 
+export async function POST(req: Request) {
   try {
     const data = await req.json();
-
-    // 🔍 Automatische ScoreX-Auswertung
-const scoreXResult = await ScoreX.evaluate(data.wallet, data.txs || []);
-const calculatedScore = scoreXResult?.newData?.score || 0;
-const calculatedBoosts = scoreXResult?.newData?.boosts || [];
-
 
     // ✅ Prüfung auf gültige Daten
     if (!data.token || !data.wallet || !data.cluster) {
@@ -24,23 +20,24 @@ const calculatedBoosts = scoreXResult?.newData?.boosts || [];
         },
       });
     }
-    // ScoreX-Ergebnisse in Daten integrieren
-    data.scoreX = calculatedScore;
-    data.boosts = calculatedBoosts;
 
+    // ✅ ScoreX berechnen
+    const { score, boosts } = calculateScoreX(data.token);
+    data.scoreX = score;
+    data.boosts = boosts;
 
     // 🧠 Telegram-Benachrichtigungen
     const tokenSymbol = data.token?.toUpperCase?.() || "???";
-    const gainPercent = data.gain || 150; // Beispielwert
-    const lossPercent = data.loss || 50;  // Beispielwert
+    const gainPercent = data.gain || 150;
+    const lossPercent = data.loss || 50;
 
     if (telegramToggles.global && telegramToggles.tradeSignals) {
-      await sendTelegramMessage(`📈 KAUFSIGNAL: $${tokenSymbol} | ScoreX: ${calculatedScore} | Boosts: ${calculatedBoosts.join(", ")}`);
-
+      await sendTelegramMessage(`📈 KAUFSIGNAL: $${tokenSymbol}`);
+    }
 
     if (telegramToggles.global && telegramToggles.tradePerformance) {
-      await sendSellGain(tokenSymbol, gainPercent); // Gewinn
-      await sendSellLoss(tokenSymbol, lossPercent); // Verlust
+      await sendSellGain(tokenSymbol, gainPercent);
+      await sendSellLoss(tokenSymbol, lossPercent);
     }
 
     // ✅ Redis speichern
