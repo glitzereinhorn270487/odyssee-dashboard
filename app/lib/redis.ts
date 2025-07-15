@@ -34,6 +34,12 @@ export async function setRedisValue(key: string, value: any): Promise<void> {
     console.error("[REDIS-SET FEHLER]", error);
   }
 }
+export async function getMonitoredWallets() {
+  return [
+    { address: "abc123...", cluster: "SmartMoney" },
+    { address: "def456...", cluster: "Insider" },
+  ];
+}
 
 export async function delRedisKey(key: string): Promise<void> {
   try {

@@ -3,6 +3,7 @@ import { ScoreX } from "@/lib/utils/scorex";
 import { addWalletToDB, removeWalletFromDB } from "@/lib/utils/database";
 import { fetchRecentTransactions } from "@/lib/helius-logic"; // oder dein aktueller Import
 import { debounce } from "@/lib/utils/debounce"; // wird unten noch erklärt
+import { getMonitoredWallets } from "@/lib/redis";
 
 export async function runCrawler() {
   const wallets = await getMonitoredWallets(); // aus Redis oder einer JSON-List
