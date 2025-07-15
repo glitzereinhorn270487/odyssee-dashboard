@@ -12,7 +12,7 @@ export const ScoreX = {
     const shouldRemove = Math.random() < 0.1;
     const shouldUpdate = Math.random() < 0.3;
     console.log("[SCOREX-EVAL]", {
-      wallet,
+      address,
       txs: txs.length,
       decision: {
         shouldUpdate: true,
