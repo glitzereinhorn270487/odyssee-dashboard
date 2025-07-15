@@ -41,6 +41,9 @@ export async function getMonitoredWallets() {
   ];
 }
 export async function removeWalletFromDB(address: string, cluster: string) { }
+export async function addWalletToDB(address: string, data: { alphaScore: string; winRate: string; note: string }) {
+  // Hier logik zum Redis-Speichern oder DB-Speichern
+}
 
 export async function delRedisKey(key: string): Promise<void> {
   try {
