@@ -13,8 +13,8 @@ export async function POST(req: Request) {
     }
 
     const key = `wallets:${category}`;
-    await redis.hset(key, wallet.address, JSON.stringify(wallet));
-
+    await getRedisValue(JSON.stringify(wallet));
+   
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ success: false, error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
