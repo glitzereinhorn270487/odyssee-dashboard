@@ -28,11 +28,6 @@ const calculatedBoosts = scoreXResult?.newData?.boosts || [];
     data.scoreX = calculatedScore;
     data.boosts = calculatedBoosts;
 
-    {
-      "token": "XYZ",
-      "scoreX": 92,
-      "boosts": ["Insider", "Momentum", "LetWinnersRun"]
-    }
 
     // 🧠 Telegram-Benachrichtigungen
     const tokenSymbol = data.token?.toUpperCase?.() || "???";
