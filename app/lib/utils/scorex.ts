@@ -1,11 +1,18 @@
 // app/lib/utils/scorex.ts
 
 // Hauptfunktion für die Bewertung eines Tokens
-export function calculateScoreX(token: any): { score: number, boosts: string[] } {
-  return {
-    score: 88, // Platzhalter-Wert
-    boosts: ["Momentum", "SmartMoney"] // statische Boosts zur Weiterverarbeitung
-  };
+export function calculateScoreX(token: any): { score: number; boosts: string[] } {
+  const boosts: string[] = [];
+
+  let score = 0;
+
+  // Beispielstruktur – die eigentliche Logik füge ich später ein
+  // if (token.insiderScore > 80) { score += 20; boosts.push("Insider"); }
+  // if (token.socialBuzz > 70) { score += 15; boosts.push("Buzz"); }
+
+  return { score, boosts };
+}
+
 }
 
 // Wrapper für Crawler-Auswertung (z. B. für Auto-Pflege der Datenbankeinträge)
