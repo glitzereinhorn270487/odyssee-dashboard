@@ -43,8 +43,8 @@ export async function getMonitoredWallets() {
 export async function removeWalletFromDB(address: string, cluster: string) { }
 
 export interface WalletData {
-  alphaScore: number | string;
-  winRate: number | string;
+  alphaScore: number;
+  winRate: number;
   note: string;
 }
 
