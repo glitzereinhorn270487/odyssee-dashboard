@@ -7,10 +7,14 @@ export const policyDecisionConfig = {
     scaling: false,
   },
 };
-export const decidePolice = (tokenData: any) => {
-  // Beispielhafte Logik (bitte später anpassen)
-  if (tokenData.boosts?.includes("LetWinnersRun")) {
-    return "Let-Winners-Run";
-  }
+export const decidePolice = (
+  category: string,
+  numericScore: number,
+  boost: string[]
+): string => {
+  // Beispielhafte, einfache Logik zur Zuordnung
+  if (boost.includes("LetWinnersRun")) return "Let-Winners-Run";
+  if (category === "Insider" && numericScore > 90) return "Insider-Highscore";
   return "Default-Policy";
 };
+
