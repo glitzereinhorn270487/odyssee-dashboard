@@ -15,7 +15,7 @@ export const ScoreX = {
     return {
       shouldRemove,
       shouldUpdate,
-      newData: = {
+      newData: {
         alphaScore: 87.3, //number
         winRate: 0.92, //number
         note: "Top performance in last 24h",
