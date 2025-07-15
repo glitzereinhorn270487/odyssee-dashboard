@@ -7,7 +7,6 @@ if (!REST_URL || !REST_TOKEN) {
   throw new Error("❌ Redis-Konfigurationswerte fehlen in der .env-Datei!");
 }
 
-import { getRedisValue } from "@/lib/redis";
 
 export async function getMonitoredWallets() {
   const raw = await getRedisValue("monitored_wallets");
