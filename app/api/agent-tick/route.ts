@@ -55,3 +55,51 @@ export async function GET() {
 
     const monitored = await getMonitoredWallets();
     const selectedWallets = isLightMode ? monitored.slice(0, 1) : monitored;
+        let newTrades = 0;
+
+    for (const wallet of selectedWallets) {
+      const result = await safeFetchFromHelius(wallet.address);
+      if (!result) continue;
+
+      const pools = await fetchNewRaydiumPools();
+      if (!pools || pools.length === 0) continue;
+
+      for (const pool of pools) {
+        const { tokenAddress, tokenSymbol, tokenName } = pool;
+
+        const alreadyTracked = await isTokenAlreadyTracked(`live:${tokenAddress}`);
+        if (alreadyTracked) continue;
+
+        const decision = await decideTrade(
+          {
+            address: tokenAddress,
+            symbol: tokenSymbol,
+            name: tokenName,
+            category: "moonshot",
+          },
+          "M1"
+        );
+
+        if (decision?.shouldBuy) {
+          await sendTelegramMessage(`📈 Paper-Trade für $${tokenSymbol} ausgelöst`);
+          await trackTokenInRedis(`live:${tokenAddress}`, decision);
+          newTrades++;
+        }
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `${newTrades} neue Trades ausgelöst`,
+    });
+  } catch (error: any) {
+    console.error("[AGENT-TICK ERROR]", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error?.message || "Unbekannter Fehler",
+      },
+      { status: 500 }
+    );
+  }
+}
