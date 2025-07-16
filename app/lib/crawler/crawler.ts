@@ -16,7 +16,7 @@ export async function runCrawler() {
   console.log("[TEST-CRAWLER] Evaluation Ergebnis:", evaluation);
 
   if (evaluation.shouldUpdate) {
-    await addWalletToDB(wallet.address, evaluation.newData);
+    await addWalletToDB(wallet.address, JSON.stringify(evaluation.newData));
     console.log("[TEST-CRAWLER] Neuer Eintrag in Redis gespeichert.");
   }
 }
