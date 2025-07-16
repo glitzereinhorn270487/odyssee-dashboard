@@ -11,8 +11,8 @@ export async function runCrawler() {
   console.log("[TEST-CRAWLER] Simulierter Aufruf mit Dummy-Wallet");
   await setRedisValue("crawler:test:timestamp", { time: Date.now() });
 
-const testKeys = await redis.keys("*");
-console.log("[DEBUG] Aktuelle Redis-Keys:", testKeys);
+const allKeys = await redis.keys("*");
+console.log("[DEBUG] Aktuelle Redis-Keys:", allKeys);
 
   const evaluation = await ScoreX.evaluate(wallet.address, fakeTxs);
 
