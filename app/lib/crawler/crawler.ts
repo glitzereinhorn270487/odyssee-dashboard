@@ -1,34 +1,22 @@
-// app/lib/crawler/crawler.ts
 import { ScoreX } from "@/lib/utils/scorex";
-import { addWalletToDB, removeWalletFromDB } from "@/lib/utils/database";
-import { fetchRecentTransactions } from "@/lib/helius-logic"; // oder dein aktueller Import
-import { debounce } from "@/lib/utils/debounce"; // wird unten noch erklärt
-import { getMonitoredWallets } from "@/lib/redis";
+import { addWalletToDB } from "@/lib/redis";
 
 export async function runCrawler() {
-  const wallets = await getMonitoredWallets();
+  const wallet = { address: "DUMMY123", cluster: "SmartMoney" };
 
-  for (const wallet of wallets) {
-    if (!debounce(wallet.address, 60000)) {
-      continue; // Frühzeitig überspringen, wenn gebounced
-    }
+  const fakeTxs = [
+    { amount: 1.23, token: "USDC", timestamp: Date.now() },
+    { amount: 4.56, token: "SOL", timestamp: Date.now() },
+  ];
 
-    const txs = [
-      { amount: 1.23, token: "USDC", timestamp: Date.now() },
-      { amount: 4.56, token: "SOL", timestamp: Date.now() },
-    ]; // Fake-Daten für ScoreX-Test
-    console.log("[SCOREX-MOCK]", wallet, txs.length);
-    let evaluation = await ScoreX.evaluate(wallet.address, txs);
+  console.log("[TEST-CRAWLER] Simulierter Aufruf mit Dummy-Wallet");
 
-    if (evaluation.shouldRemove) {
-      console.log("[CRAWLER] Entferne Wallet:", wallet.address);
-      await addWalletToDB(wallet.address, wallet.cluster);
+  const evaluation = await ScoreX.evaluate(wallet.address, fakeTxs);
 
+  console.log("[TEST-CRAWLER] Evaluation Ergebnis:", evaluation);
 
-    } else if (evaluation.shouldUpdate) {
-      console.log("[CRAWLER] Füge Wallet hinzu:", wallet.address);
-      await addWalletToDB(wallet.address, JSON.stringify(evaluation.newData));
-
-    }
+  if (evaluation.shouldUpdate) {
+    await addWalletToDB(wallet.address, evaluation.newData);
+    console.log("[TEST-CRAWLER] Neuer Eintrag in Redis gespeichert.");
   }
 }
