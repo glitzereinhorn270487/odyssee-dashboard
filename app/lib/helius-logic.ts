@@ -1,4 +1,4 @@
-export async function fetchRecentRaydiumTokens(): Promise<any[]> {
+export async function fetchFromHelius(): Promise<any[]> {
   const API_KEY = process.env.HELIUS_API_KEY;
   const limit = 15;
 
