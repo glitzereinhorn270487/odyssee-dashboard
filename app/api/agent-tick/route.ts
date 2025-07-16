@@ -8,6 +8,44 @@ import { sendTelegramMessage } from "@/lib/telegram";
 declare global {
   var lastCallTime: number | undefined;
 }
+// Import optional
+let retryCount = 0;
+const MAX_RETRIES = 5;
+
+async function safeFetchFromHelius(wallet: string) {
+  try {
+    const res = await fetchFromHelius(wallet);
+    retryCount = 0; // Reset bei Erfolg
+    return res;
+  } catch (e: any) {
+    if (e.message?.includes("429")) {
+      retryCount++;
+      console.warn(`[RateLimit] 429 bei ${wallet}, Retry ${retryCount}/${MAX_RETRIES}`);
+      if (retryCount >= MAX_RETRIES) {
+        console.warn("[RateLimit] Max. Re-tries erreicht, breche Light-Modus Tick ab.");
+        return null; // Brich ab nach X Versuchen
+      }
+
+      const delay = 2 ** retryCount * 1000; // 2s, 4s, 8s usw.
+      await new Promise((r) => setTimeout(r, delay));
+      return await safeFetchFromHelius(wallet); // Retry erneut
+    }
+
+    throw e; // Andere Fehler weiterwerfen
+  }
+}
+// Beispiel: Nur 1 Wallet oder Token im Light-Modus
+const monitored = await getMonitoredWallets();
+const selected = monitored.slice(0, 1); // Nur 1 Wallet prüfen
+
+// Statt fetchFromHelius(wallet.address)
+const result = await safeFetchFromHelius(wallet.address);
+if (!result) return; // Bei RateLimit-Abbruch beenden
+
+const today = new Date();
+const isLightMode = today < new Date("2025-07-24");
+
+const selected = isLightMode ? monitored.slice(0, 1) : monitored;
 
 export async function GET() {
   try {
