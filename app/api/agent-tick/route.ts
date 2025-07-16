@@ -54,4 +54,4 @@ export async function GET() {
     const isLightMode = today < new Date("2025-07-24");
 
     const monitored = await getMonitoredWallets();
-    const selectedWallets = isLightMode ? mon
+    const selectedWallets = isLightMode ? monitored.slice(0, 1) : monitored
