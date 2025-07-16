@@ -17,7 +17,7 @@ async function safeFetchFromHelius(wallet: string) {
 
   while (retryCount < MAX_RETRIES) {
     try {
-      return await fetchFromHelius(wallet);
+      return await fetchFromHelius;
     } catch (e: any) {
       if (e.message?.includes("429")) {
         retryCount++;
