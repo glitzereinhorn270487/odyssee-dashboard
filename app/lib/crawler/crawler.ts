@@ -11,7 +11,7 @@ export async function runCrawler() {
   console.log("[TEST-CRAWLER] Simulierter Aufruf mit Dummy-Wallet");
   await setRedisValue("crawler:test:timestamp", { time: Date.now() });
 
-
+const allKeys = await redis.keys("*");
 console.log("[DEBUG] Aktuelle Redis-Keys:", allKeys);
   if (!redis) {
     console.error("Redis nicht initialisiert!");
