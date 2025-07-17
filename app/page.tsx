@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const [telegramEnabled, setTelegramEnabled] = useState(true); // Beispieltoggle
 
   useEffect(() => {
+   
     async function fetchLivePositions() {
       try {
         const response = await fetch('/api/live-positions');

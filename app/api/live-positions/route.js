@@ -1,5 +1,5 @@
 // app/api/live-positions/route.ts
-import { getRedisValue } from "@/lib/redis";
+import { getAllKeys, getRedisValue } from "@/lib/redis";
 import { NextResponse } from "next/server";
 
 export const revalidate = 0;
@@ -21,7 +21,22 @@ export async function GET() {
         pnlPercentage: 10,
       },
     ];
+    const keys = await getAllKeys();
+    const liveKeys = keys.filter(k=> k.startsWith("live:"));
 
+    const results = await Promise.all(
+      liveKeys.map(async key => {
+        const data = await getRedisValue(key);
+        try {
+          return JSON. parse(data);
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    return NextResponse.json({ data: results.filter(Boolean) });
+    
     return NextResponse.json({ status: "success", data: dummyData });
   } catch (error) {
     console.error("[FATALER FEHLER] Fehler beim Redis-Zugriff:", error);
