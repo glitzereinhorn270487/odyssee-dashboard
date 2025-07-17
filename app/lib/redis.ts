@@ -1,5 +1,11 @@
 // lib/redis.ts
+import Redis from "ioredis";
 
+export const redis = new Redis(process.env.UPSTASH_REDIS_REST_URL!, {
+  password: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+await redis.connect();
 const REST_URL = process.env.UPSTASH_REDIS_REST_URL!;
 const REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
 

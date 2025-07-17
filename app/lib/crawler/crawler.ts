@@ -1,5 +1,5 @@
 import { ScoreX } from "@/lib/utils/scorex";
-import { setRedisValue, addWalletToDB } from "@/lib/redis";
+import { redis,setRedisValue, addWalletToDB } from "@/lib/redis";
 export async function runCrawler() {
   const wallet = { address: "DUMMY123", cluster: "SmartMoney" };
 
@@ -11,9 +11,12 @@ export async function runCrawler() {
   console.log("[TEST-CRAWLER] Simulierter Aufruf mit Dummy-Wallet");
   await setRedisValue("crawler:test:timestamp", { time: Date.now() });
 
-const allKeys = await redis.keys("*");
-console.log("[DEBUG] Aktuelle Redis-Keys:", allKeys);
 
+console.log("[DEBUG] Aktuelle Redis-Keys:", allKeys);
+  if (!redis) {
+    console.error("Redis nicht initialisiert!");
+    return;
+  }
   const evaluation = await ScoreX.evaluate(wallet.address, fakeTxs);
 
   console.log("[TEST-CRAWLER] Evaluation Ergebnis:", evaluation);
