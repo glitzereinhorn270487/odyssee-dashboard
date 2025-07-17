@@ -1,6 +1,9 @@
 // lib/redis.ts
 import Redis from "ioredis";
 
+declare global {
+  var __odyssee_redit__: Redis | undefined;
+}
 export const redis = new Redis(process.env.UPSTASH_REDIS_REST_URL!, {
   password: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
