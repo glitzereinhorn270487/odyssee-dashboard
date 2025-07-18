@@ -42,9 +42,7 @@ export async function setRedisValue<T = any>(key: string, value: T): Promise<voi
         Authorization: `Bearer ${REST_TOKEN}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        value: JSON.stringify(value),
-      }),
+      body: JSON.stringify({ value }),
     });
   } catch (error) {
     console.error("[REDIS-SET FEHLER]", error);

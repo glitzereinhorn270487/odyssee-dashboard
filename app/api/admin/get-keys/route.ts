@@ -12,9 +12,9 @@ export async function GET() {
   );
 
   const entries = await Promise.all(
-    filtered.map(async (key) => {
-      const value = await getRedisValue(key); // ✅ Korrekt
-      return { key, value };
+    filtered.map(async () => {
+      const value = await getRedisValue(keys); // ✅ Korrekt
+      return { keys, value };
     })
   );
 
