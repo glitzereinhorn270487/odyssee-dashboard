@@ -1,3 +1,14 @@
+import type { RedFlagWallet } from "@types/RedFlagWallet";
+import type { InsiderWallet} from "@types/InsiderWallet";
+import type {SmartMoneyWallet} from "@types/SmartMoneyWallet";
+import type {ViralXAccount} from "@types/ViralXAccount";
+import type {NarrativeMaker} from "@types/NarrativeMaker";
+
+const result = await getRedisValue<RedFlagWallet>("wallets:redflag:5r1mS4g...");
+
+if (result?.isBlacklisted) {
+  console.log("Dieser Wallet ist geblacklistet:", result.note);
+}
 const REST_URL = process.env.UPSTASH_REDIS_REST_URL!;
 const REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
 
@@ -18,19 +29,22 @@ export async function getRedisValue(key: string): Promise<any | null> {
   }
 }
 
-export async function setRedisValue(key: string, value: any): Promise<void> {
-  const safeValue = typeof value === "string" ? value : JSON.stringify(value);
+export async function setRedisValue<T = any(key: string): Promise<T | null> {
+
   try {
-    await fetch(`${REST_URL}/set/${key}`, {
-      method: "POST",
+    const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/get/{key}` , {
       headers: {
-        Authorization: `Bearer ${REST_TOKEN}`,
-        "Content-Type": "application/json",
+        Authorization: 'Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}' ,
       },
-      body: JSON.stringify({ value: safeValue }),
     });
-  } catch (error) {
-    console.error("[REDIS-SET FEHLER]", error);
+        
+    if (!res.ok) return null;
+   
+    const data = await res.json();
+    return data.result ? JSON.parse(data.result) : null;
+  } catch (err) {
+    console.error("[REDIS] Fehler beim Lesen:", err);
+    return null;
   }
 }
 

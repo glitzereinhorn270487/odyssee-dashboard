@@ -1,19 +1,19 @@
+// app/api/add-wallet/route.ts
+
 import { NextResponse } from "next/server";
 import { setRedisValue } from "@/lib/redis";
 
 export async function POST(req: Request) {
   try {
-    const { wallet, category } = await req.json();
+    const body = await req.json();
+    const { wallet, category } = body;
 
     if (!wallet || !category) {
-      return NextResponse.json(
-        { success: false, error: "Missing wallet or category" },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: "Missing wallet or category" }, { status: 400 });
     }
 
-    const key = `wallets:${category}:${wallet.address}`;
-    await setRedisValue(key, wallet);
+    const key = `wallets:${category}:${wallet}`;
+    await setRedisValue(key, body); // speichert den gesamten JSON-Body
 
     return NextResponse.json({ success: true });
   } catch (error) {
