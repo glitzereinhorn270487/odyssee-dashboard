@@ -18,7 +18,8 @@ export async function GET() {
     })
   );
 
-  return new Response(JSON.stringify(entries, null, 2), {
+  console.log("entries:", entries);
+  return new Response(JSON.stringify({ success: true, count: entries.length, entries}, null, 2), {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });
