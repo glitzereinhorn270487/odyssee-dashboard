@@ -1,24 +1,25 @@
-// API-Route: Holt alle Keys und zugehörige Inhalte
-import { NextResponse } from "next/server";
-import { getAllKeys, getRedisValue } from "@/lib/redis";
+import { getRedisValue } from "@/lib/redis";
 
 export async function GET() {
-  try {
-    const keys = await getAllKeys();
-    const filtered = keys.filter((key: string) => key.startsWith("wallets:redflag"));
+  const keys = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/keys`, {
+    headers: {
+      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+    },
+  }).then((res) => res.json());
 
-   const entries = await Promise.all(
-     filtered.map(async (key) => {
-       const value: await getRedisValue(key);
-       return { key, value };
-      })
-    );
+  const filtered = keys.filter((key: string) =>
+    key.startsWith("wallets:redflag:")
+  );
 
-    return NextResponse.json({ success: true, data: entries });
-  } catch (error: any) {
-    return NextResponse.json({
-      success: false,
-      error: error?.message || "Unbekannter Fehler",
-    }, { status: 500 });
-  }
+  const entries = await Promise.all(
+    filtered.map(async (key) => {
+      const value = await getRedisValue(key); // ✅ Korrekt
+      return { key, value };
+    })
+  );
+
+  return new Response(JSON.stringify(entries, null, 2), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }

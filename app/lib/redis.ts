@@ -1,8 +1,8 @@
-import type { RedFlagWallet } from "@types/RedFlagWallet";
-import type { InsiderWallet} from "@types/InsiderWallet";
-import type {SmartMoneyWallet} from "@types/SmartMoneyWallet";
-import type {ViralXAccount} from "@types/ViralXAccount";
-import type {NarrativeMaker} from "@types/NarrativeMaker";
+import type { RedFlagWallet } from "@/types/RedFlagWallet";
+import type { InsiderWallet} from "@/types/InsiderWallet";
+import type {SmartMoneyWallet} from "@/types/SmartMoneyWallet";
+import type {ViralXAccount} from "@/types/ViralXAccount";
+import type {NarrativeMaker} from "@/types/NarrativeMaker";
 
 const result = await getRedisValue<RedFlagWallet>("wallets:redflag:5r1mS4g...");
 
@@ -16,37 +16,41 @@ if (!REST_URL || !REST_TOKEN) {
   throw new Error("❌ Redis-Konfigurationswerte fehlen in der .env-Datei!");
 }
 
-export async function getRedisValue(key: string): Promise<any | null> {
+export async function getRedisValue<T = any>(key: string): Promise<T | null> {
   try {
-    const response = await fetch(`${REST_URL}/get/${key}`, {
-      headers: { Authorization: `Bearer ${REST_TOKEN}` },
-    });
-    const data = await response.json();
-    return data.result ?? null;
-  } catch (error) {
-    console.error("[REDIS-GET FEHLER]", error);
-    return null;
-  }
-}
-
-export async function setRedisValue<T = any(key: string): Promise<T | null> {
-
-  try {
-    const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/get/{key}` , {
+    const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/get/${key}`, {
       headers: {
-        Authorization: 'Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}' ,
+        Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
       },
     });
-        
+
     if (!res.ok) return null;
-   
+
     const data = await res.json();
     return data.result ? JSON.parse(data.result) : null;
-  } catch (err) {
-    console.error("[REDIS] Fehler beim Lesen:", err);
+  } catch (error) {
+    console.error("[REDIS ERROR]", error);
     return null;
   }
 }
+
+export async function setRedisValue<T = any>(key: string, value: T): Promise<void> {
+  try {
+    await fetch(`${REST_URL}/set/${key}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${REST_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        value: JSON.stringify(value),
+      }),
+    });
+  } catch (error) {
+    console.error("[REDIS-SET FEHLER]", error);
+  }
+}
+
 
 export async function delRedisKey(key: string): Promise<void> {
   try {
