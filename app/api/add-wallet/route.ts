@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
     const key = `wallets:${category}:${wallet}`;
     await setRedisValue(key, body); // speichert den gesamten JSON-Body
-
+    console.log("[WALLET GESPEICHERT]", key, );
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(
