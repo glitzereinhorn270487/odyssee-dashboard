@@ -65,7 +65,7 @@ export async function GET() {
             address: tokenAddress,
             symbol: tokenSymbol,
             scoreX: decision.scoreX,
-            fomoScore: decision.fomoScore || "N/A",
+            fomoScore: String(decision.fomoScore || "N/A"),
             pumpRisk: decision.pumpRisk || "N/A",
           });
         }
