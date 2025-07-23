@@ -8,7 +8,7 @@ const WALLET_TO_CHECK = "G4WaYDoB8huCBmWJ7roVK9q5p4N1LUET4rYpwCPmfPVs";
 export async function GET() {
   try {
     // Übergebe die definierte Variable an die Funktion
-    await checkAndReinvest(WALLET_TO_CHECK);
+    await checkAndReinvest();
     
     return NextResponse.json({ success: true, message: "Reinvest-Prüfung erfolgreich." });
   } catch (err: any) { // Es ist eine gute Praxis, den Fehler als 'any' zu typisieren
