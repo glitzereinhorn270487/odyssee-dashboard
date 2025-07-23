@@ -17,11 +17,11 @@ export interface TradeCandidate {
   symbol: string;
   name: string;
   candidate?: string;
-  fomoScore: string;
-  pumpRisk: string;
+  fomoScore?: number | string;
+  pumpRisk?: string;
   scoreX: number;
   alphaScore: number;
   influenceScore: number;
- 
+  boosts: string[];
   // ... weitere Felder je nach Bedarf
 }
