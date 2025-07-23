@@ -3,10 +3,10 @@
 import { NextResponse } from "next/server";
 import { sendTelegramBuyMessage } from "@/lib/telegram";
 import { v4 as uuidv4 } from "uuid";
-import { Redis } from "ioredis";
+import { Redis } from "@upstash/redis";
 import { setRedisValue } from "@/lib/redis"
 
-const redis = new Redis(process.env.REDIS_URL!);
+const redis = Redis .fromEnv ( )
 
 export async function POST(req: Request) {
   try {
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       strategy,
     };
 
-    await redis.set(`trade:${id}`, JSON.stringify(trade));
+   
 
     await setRedisValue('position:${token.address}', {
       symbol: tokenSymbol,

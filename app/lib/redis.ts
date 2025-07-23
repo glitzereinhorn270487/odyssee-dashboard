@@ -1,12 +1,12 @@
-import Redis from 'ioredis';
+import Redis from '@upstash/redis';
 
-const redis = new Redis(process.env.REDIS_URL!);
+const redis = Redis .fromEnv ( );
 
 let client: Redis | null = null;
 
 export async function getRedisClient(): Promise<Redis> {
   if (!client) {
-    client = new Redis(process.env.REDIS_URL!);
+    client =  Redis .fromEnv ( )
   }
   return client;
 }
@@ -23,9 +23,9 @@ export async function delRedisKey(key: string) {
 
 export async function getMonitoredExport() {
   const keys = await redis?.keys("monitored:*");
-  const results = await Promise.all(keys.map(async (key) => {
-    const value = await redis.get(key);
-    return { key, value };
+  const results = await Promise.all(keys.map(async () => {
+    const value = await redis.get(keys);
+    return { keys, value };
   }));
   return results;
 }
