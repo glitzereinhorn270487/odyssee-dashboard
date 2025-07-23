@@ -5,8 +5,10 @@ export async function executeS_TierStrategy(token: TradeCandidate) {
   const score = await getTokenScore(token); // ← Score hier abrufen
   await notifyBuySignal({
     symbol: token.symbol,
-    score: score.totalScore,
-    category: token.category
+    scoreX: score.totalScore,
+    address: token.address,
+    fomoScore: "unbekannt",
+    pumpRisk: "unbekannt",
   });
 
   const capital = getCapitalForStage();
