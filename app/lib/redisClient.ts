@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis';
+import { Redis } from 'ioredis';
 
 // Lese die URL aus den Umgebungsvariablen, die du in Vercel gesetzt hast.
 const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
@@ -10,11 +10,10 @@ if (!redisUrl) {
 }
 
 // Erstelle die Redis-Instanz mit der korrekten URL.
-const redis = Redis .fromEnv ( );
+const redis = new Redis ( );
 
-// Optional: Ein Event-Listener, der Verbindungsprobleme sofort meldet.
-redis.on('error', (err) => {
-  console.error('[REDIS_CLIENT_ERROR]', err);
-});
+ {
+  console.error('[REDIS_CLIENT_ERROR]');
+};
 
 export default redis;
