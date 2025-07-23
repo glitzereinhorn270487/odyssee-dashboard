@@ -15,7 +15,7 @@ export async function GET(req: Request) {
   const allKeys = await redis.keys('position:*')
   const value = await redis.get('position:abc123')
   const allData = await Promise.all(
-    allKeys.map(async (key) => {
+    allKeys.map(async (key: string) => {
       const raw = await redis.get(key)
       if (!raw) return null
       try {
