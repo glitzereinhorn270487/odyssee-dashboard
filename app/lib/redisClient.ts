@@ -1,6 +1,8 @@
 // lib/redisClient.ts
 import Redis from "ioredis";
 
-const redis = new Redis(process.env.REDIS_URL! || "redis://127.0.0.1:6379");
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL || 'redis://localhost:6379';
+
+const redis = new Redis(redisUrl || "redis://127.0.0.1:6379");
 
 export default redis;
