@@ -10,7 +10,7 @@ const WALLET_ADDRESSES = [
   "WALLET_5_ADDRESS",
 ];
 
-export async function checkAndReinvest() {
+export async function checkAndReinvest(walletAddress: string) {
   let totalCapital = 0;
 
   // Kapital aller Wallets summieren
