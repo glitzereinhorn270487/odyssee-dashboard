@@ -11,26 +11,23 @@ type TokenScore = {
 };
 
 export async function getTokenScore(token: any) {
+  let scoreX = 0; // Initialisiere scoreX am Anfang der Funktion
   
-    if (fomoScore === 'hoch') {
-      scoreX += 12
-    } else if (fomoScore === 'mittel') {
-      scoreX += 6
-    }
-    if (pumpRisk === 'hoch') {
-      scoreX  -= 15
-    } else if (pumpRisk === 'mittel') {
-      scoreX -= 7
-    }
-    return {
-    baseScore: 87,
-    totalScore: 103,
-    flags: []
-  };
+  // KORREKTUR: Hole den fomoScore aus dem übergebenen token-Objekt
+  const fomoScore = token.fomoScore; 
 
-  // Dummy-Logik – kann später mit echter Metrik ersetzt werden
-  return Math.floor(Math.random() * 100);
-}
+  if (fomoScore === 'hoch') {
+    scoreX += 12;
+  } else if (fomoScore === 'mittel') {
+    scoreX += 6;
+  }
+  
+  // ... hier folgen deine weiteren Berechnungen für scoreX ...
+
+  return scoreX;
+
+    
+  };
 
 export function getRiskLevel(token: any): number {
   return token.riskScore || 0;
