@@ -1,26 +1,41 @@
-// app/api/find-new-tokens/route.ts
-
-import { decideTrade } from "@/agent/trade-engine";
-import { fetchNewRaydiumPools } from "@/lib/helius-raydium";
-import { isTokenAlreadyTracked, trackTokenInRedis } from "@/lib/redis";
+import { ScoreX } from "@/lib/utils/scorex";
+import { setRedisValue } from "@/lib/redis";
+import redis from "@/lib/redisClient"; // Redis-Client muss importiert sein
+import { runCrawler } from "@/lib/crawler/crawler";
 
 export async function GET() {
-  console.log("[LISTENER] Starte Pool-Scan");
+  await runCrawler();
 
-  const pools = await fetchNewRaydiumPools();
-  let tradeCount = 0;
 
-  for (const token of pools) {
-    const alreadyTracked = await isTokenAlreadyTracked(`live:${token.tokenAddress}`);
-    if (alreadyTracked) continue;
+  console.log("[TEST-CRAWLER] Simulierter Aufruf mit Dummy-Wallet");
 
-    const decision = await decideTrade(token, "M0");
-    if (decision) {
-      console.log(`✅ PAPER-TRADE für ${token.tokenSymbol}`);
-      await trackTokenInRedis(`live:${token.tokenAddress}`, decision);
-      tradeCount++;
-    }
+  const wallet = {
+    address: "DUMMY123",
+    cluster: "SmartMoney",
+  };
+
+  const fakeTxs = [
+    { amount: 1.23, token: "USDC", timestamp: Date.now() },
+    { amount: 4.56, token: "SOL", timestamp: Date.now() },
+  ];
+
+
+
+  // ✅ Timestamp zur Kontrolle speichern
+  await setRedisValue("crawler:test:timestamp", { time: Date.now() });
+
+  // ✅ Redis-Keys abrufen zur Debug-Kontrolle
+  const allKeys = await redis.keys("*");
+  console.log("[DEBUG] Aktuelle Redis-Keys:", allKeys);
+
+  // ✅ ScoreX auswerten
+  const evaluation = await ScoreX.evaluate(wallet.address, fakeTxs);
+  console.log("[TEST-CRAWLER] Evaluation Ergebnis:", evaluation);
+
+  // ✅ Optional: In Redis speichern, wenn neue Daten relevant sind
+  if (evaluation.shouldUpdate) {
+    console.log("[TEST-CRAWLER] Neuer Eintrag in Redis gespeichert.");
   }
 
-  return new Response(`✅ ${tradeCount} neue Paper-Trades`, { status: 200 });
+  return new Response("Crawler ausgeführt", { status: 200 });
 }

@@ -3,6 +3,10 @@
     {
       "path": "/api/agent-tick",
       "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/reinvest",
+      "schedule": "0 * * * *"
     }
   ]
 }

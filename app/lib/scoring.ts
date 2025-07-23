@@ -4,11 +4,25 @@
 type TokenScore = {
   baseScore: number;
   totalScore: number;
+  fomoScore: number;
+  scoreX: number;
+  pumpRisk: string;
   flags: string[];
 };
 
 export async function getTokenScore(token: any) {
-  return {
+  
+    if (fomoScore === 'hoch') {
+      scoreX += 12
+    } else if (fomoScore === 'mittel') {
+      scoreX += 6
+    }
+    if (pumpRisk === 'hoch') {
+      scoreX  -= 15
+    } else if (pumpRisk === 'mittel') {
+      scoreX -= 7
+    }
+    return {
     baseScore: 87,
     totalScore: 103,
     flags: []

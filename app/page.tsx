@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
+import ExportTrades from "./components/dashboard/ExportTrades";
 interface Position {
   tradeId: string;
   tokenSymbol: string;
@@ -18,7 +18,6 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [telegramEnabled, setTelegramEnabled] = useState(true); // Beispieltoggle
-
   useEffect(() => {
    
     async function fetchLivePositions() {
@@ -35,7 +34,7 @@ export default function DashboardPage() {
     }
     fetchLivePositions();
   }, []);
-
+  
   const pnlSum = positions.reduce((acc, p) => acc + (p.currentValueUsd - p.initialInvestmentUsd), 0);
   const invested = positions.reduce((acc, p) => acc + p.initialInvestmentUsd, 0);
   const returnPerc = invested > 0 ? (pnlSum / invested) * 100 : 0;
@@ -53,6 +52,7 @@ export default function DashboardPage() {
           <h2 className="text-lg">📈 Gesamt-Gewinn/Verlust</h2>
           <p className={`text-2xl font-mono ${returnPerc >= 0 ? 'text-green-400' : 'text-red-400'}`}>{returnPerc.toFixed(2)}%</p>
         </div>
+        <ExportTrades />
         <div className="bg-gray-800 rounded-2xl p-4 shadow">
           <h2 className="text-lg">📬 Telegram-Status</h2>
           <button

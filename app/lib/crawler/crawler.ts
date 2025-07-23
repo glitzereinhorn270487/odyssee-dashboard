@@ -1,29 +1,21 @@
-import { ScoreX } from "@/lib/utils/scorex";
-import { setRedisValue, addWalletToDB, getAllKeys } from "@/lib/redis";
+import { setRedisValue } from "@/lib/redis";
+import { NextResponse } from "next/server";
 
 export async function runCrawler() {
-  console.log("[TEST-CRAWLER] Simulierter Aufruf mit Dummy-Wallet");
+  console.log("[TEST-CRAWLER] Simulierter Aufruf");
+}
 
-  const wallet = {
-    address: "DUMMY123",
-    cluster: "SmartMoney",
-  };
+export async function POST(req: Request) {
+  const { address, cluster, note, scoreX, fomoScore, pumpRisk } = await req.json();
 
-  const fakeTxs = [
-    { amount: 1.23, token: "USDC", timestamp: Date.now() },
-    { amount: 4.56, token: "SOL", timestamp: Date.now() },
-  ];
+  await setRedisValue('wallet:${cluster}:${address}', {
+    address,
+    cluster,
+    note: note || "",
+    scoreX: scoreX || 0,
+    fomoScore: fomoScore || "unbekannt",
+    pumpRisk: pumpRisk || "unbekannt",
+  });
 
-  await setRedisValue("crawler:test:timestamp", { time: Date.now() });
-
-  const allKeys = await getAllKeys();
-  console.log("[DEBUG] Aktuelle Redis-Keys:", allKeys);
-
-  const evaluation = await ScoreX.evaluate(wallet.address, fakeTxs);
-  console.log("[TEST-CRAWLER] Evaluation Ergebnis:", evaluation);
-
-  if (evaluation.shouldUpdate) {
-    await addWalletToDB(wallet.address, JSON.stringify(evaluation.newData));
-    console.log("[TEST-CRAWLER] Neuer Eintrag in Redis gespeichert.");
-  }
+  return NextResponse.json({ success: true });
 }

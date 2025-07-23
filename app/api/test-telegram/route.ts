@@ -1,8 +1,8 @@
 // app/api/test-telegram/route.ts
 import { NextResponse } from "next/server";
-import { sendTelegramMessage } from "@/lib/telegram";
+import { sendTelegramBuyMessage } from "@/lib/telegram";
 
 export async function GET() {
-  await sendTelegramMessage("🤖 Testnachricht von Odyssee-Agent.");
+  await sendTelegramBuyMessage
   return NextResponse.json({ status: "sent" });
 }

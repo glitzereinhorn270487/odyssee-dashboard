@@ -1,73 +1,122 @@
-// telegram-events.ts
-
 import { telegramToggles } from "@/config/telegramToggles";
-import { sendTelegramMessage } from "@/lib/telegram";
-
-
-/**
- * 🔹 Systemstart
- */
-export async function sendSellLoss(symbol: string, lossPercent: number) {
-  if (telegramToggles.global && telegramToggles.tradePerformance) {
-    await sendTelegramMessage(
-      `❌ <b>VERKAUF (STOP-LOSS):</b>\nPosition $${symbol} bei -${lossPercent}% verkauft.`
-    );
-  }
-}
-export async function sendSellGain(symbol: string, gainPercent: number) {
-  if (telegramToggles.global && telegramToggles.tradePerformance) {
-    await sendTelegramMessage(
-      `💰 <b>VERKAUF (GEWINN):</b>\nPosition $${symbol} mit +${gainPercent}% verkauft.`
-    );
-  }
-}
-export async function notifySystemStart() {
-  if (telegramToggles.global && telegramToggles.system) {
-    await sendTelegramMessage(
-      "🤖 <b>Odyssee Agent V1 ist jetzt online und überwacht den Markt.</b>"
-    );
-  }
-}
+import { sendTelegramBuyMessage, sendTelegramSellMessage } from "@/lib/telegram";
 
 /**
- * 🔹 Kaufsignal
+ * 🔹 Verkaufsverlust
  */
-export async function notifyBuySignal(token: {
+export async function sendSellLoss({
+  address,
+  symbol,
+  scoreX,
+  fomoScore,
+  pumpRisk,
+  reason,
+  profit,
+}: {
+  address: string;
   symbol: string;
-  score: number;
-  category: string;
+  scoreX: number;
+  fomoScore: string;
+  pumpRisk: string;
+  reason: string;
+  profit: number;
 }) {
-  if (telegramToggles.global && telegramToggles.tradeSignals) {
-    await sendTelegramMessage(
-      `📈 <b>KAUFSIGNAL!</b>\nToken: $${token.symbol}\nScore: ${token.score}\nKategorie: ${token.category}`
-    );
+  if (telegramToggles.global && telegramToggles.tradePerformance) {
+    await sendTelegramSellMessage({
+      address,
+      symbol,
+      scoreX,
+      fomoScore,
+      pumpRisk,
+      reason,
+      profit,
+    });
   }
 }
 
 /**
  * 🔹 Verkaufsgewinn
  */
-export async function notifySellProfit(token: {
+export async function sendSellGain({
+  address,
+  symbol,
+  scoreX,
+  fomoScore,
+  pumpRisk,
+  reason,
+  profit,
+}: {
+  address: string;
   symbol: string;
-  percent: number;
+  scoreX: number;
+  fomoScore: string;
+  pumpRisk: string;
+  reason: string;
+  profit: number;
 }) {
-  if (telegramToggles.global && telegramToggles.sales) {
-    await sendTelegramMessage(
-      `💰 <b>VERKAUF (GEWINN):</b>\nPosition $${token.symbol} mit +${token.percent}% verkauft.`
-    );
+  if (telegramToggles.global && telegramToggles.tradePerformance) {
+    await sendTelegramSellMessage({
+      address,
+      symbol,
+      scoreX,
+      fomoScore,
+      pumpRisk,
+      reason,
+      profit,
+    });
   }
 }
 
 /**
- * 🔹 Verkaufsverlust
+ * 🔹 Systemstart
  */
-export async function notifySellLoss(token: {
+export async function notifySystemStart({
+  address,
+  symbol,
+  scoreX,
+  fomoScore,
+  pumpRisk,
+}: {
+  address: string;
   symbol: string;
-  percent: number;
+  scoreX: number;
+  fomoScore: string;
+  pumpRisk: string;
 }) {
-  if (telegramToggles.global && telegramToggles.sales) {
-    await sendTelegramMessage(
-      `❌ <b>VERKAUF (VERLUST):</b>\nPosition $${token.symbol} bei -${token.percent}% verkauft.`
-    );
+  if (telegramToggles.global && telegramToggles.system) {
+    await sendTelegramBuyMessage({
+      address,
+      symbol,
+      scoreX,
+      fomoScore,
+      pumpRisk,
+    });
+  }
+}
+
+/**
+ * 🔹 Kaufsignal
+ */
+export async function notifyBuySignal({
+  address,
+  symbol,
+  scoreX,
+  fomoScore,
+  pumpRisk,
+}: {
+  address: string;
+  symbol: string;
+  scoreX: number;
+  fomoScore: string;
+  pumpRisk: string;
+}) {
+  if (telegramToggles.global && telegramToggles.tradeSignals) {
+    await sendTelegramBuyMessage({
+      address,
+      symbol,
+      scoreX,
+      fomoScore,
+      pumpRisk,
+    });
   }
 }

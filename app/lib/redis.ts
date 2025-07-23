@@ -1,102 +1,80 @@
-import type { RedFlagWallet } from "@/types/RedFlagWallet";
-import type { InsiderWallet} from "@/types/InsiderWallet";
-import type {SmartMoneyWallet} from "@/types/SmartMoneyWallet";
-import type {ViralXAccount} from "@/types/ViralXAccount";
-import type {NarrativeMaker} from "@/types/NarrativeMaker";
+import Redis from 'ioredis';
 
-const result = await getRedisValue<RedFlagWallet>("wallets:redflag:5r1mS4g...");
+const redis = new Redis(process.env.REDIS_URL!);
 
-if (result?.isBlacklisted) {
-  console.log("Dieser Wallet ist geblacklistet:", result.note);
-}
-const REST_URL = process.env.UPSTASH_REDIS_REST_URL!;
-const REST_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
+let client: Redis | null = null;
 
-if (!REST_URL || !REST_TOKEN) {
-  throw new Error("❌ Redis-Konfigurationswerte fehlen in der .env-Datei!");
-}
-
-export async function getRedisValue<T = any>(key: string): Promise<T | null> {
-  try {
-    const res = await fetch(`${process.env.UPSTASH_REDIS_REST_URL}/get/${key}`, {
-      headers: {
-        Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
-      },
-    });
-
-    if (!res.ok) return null;
-
-    const data = await res.json();
-    return data.result ? JSON.parse(data.result) : null;
-  } catch (error) {
-    console.error("[REDIS ERROR]", error);
-    return null;
+export async function getRedisClient(): Promise<Redis> {
+  if (!client) {
+    client = new Redis(process.env.REDIS_URL!);
   }
+  return client;
 }
 
-export async function setRedisValue<T = any>(key: string, value: T): Promise<void> {
-  try {
-    await fetch(`${REST_URL}/set/${key}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${REST_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ value }),
-    });
-  } catch (error) {
-    console.error("[REDIS-SET FEHLER]", error);
-  }
+export async function getMonitoredWallets(): Promise<string[]> {
+  const keys = await getAllKeys();
+  return keys.filter((k)=> k.startsWith("wallet:")).map((k) => k.split(":")[1]);
 }
 
+export async function delRedisKey(key: string) {
+  const client = await getRedisClient();
+  await client.del(key);
+}
 
-export async function delRedisKey(key: string): Promise<void> {
-  try {
-    await fetch(`${REST_URL}/del/${key}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${REST_TOKEN}` },
-    });
-  } catch (error) {
-    console.error("[REDIS-DEL FEHLER]", error);
-  }
+export async function getMonitoredExport() {
+  const keys = await redis?.keys("monitored:*");
+  const results = await Promise.all(keys.map(async (key) => {
+    const value = await redis.get(key);
+    return { key, value };
+  }));
+  return results;
+}
+
+export async function getRedisValue<T>(key: string): Promise<T |null> {
+  const value = await redis.get(key);
+  if (!value) return null;
+  return JSON.parse(value);
 }
 
 export async function getAllKeys(): Promise<string[]> {
-  try {
-    const response = await fetch(`${REST_URL}/keys/*`, {
-      headers: { Authorization: `Bearer ${REST_TOKEN}` },
-    });
-    const data = await response.json();
-    return data.result ?? [];
-  } catch (error) {
-    console.error("[REDIS-KEYS FEHLER]", error);
-    return [];
-  }
+  return redis.keys("*");
 }
 
-export async function isTokenAlreadyTracked(tokenAddress: string): Promise<boolean> {
-  const result = await getRedisValue(`live:${tokenAddress}`);
-  return !!result;
+export async function setRedisValue<T>(key: string, value: T): Promise<void> {
+  await redis.set(key, JSON.stringify(value));
 }
 
-export async function trackTokenInRedis(tokenAddress: string, data: any): Promise<void> {
-  await setRedisValue(`live:${tokenAddress}`, data);
+// Prüft, ob ein Token bereits getrackt wurde (z. B. durch ID)
+export async function isTokenAlreadyTracked(tokenId: string): Promise<boolean> {
+  const exists = await redis.exists(`tracked:${tokenId}`)
+  return exists === 1
 }
 
-export async function getMonitoredWallets() {
-  const raw = await getRedisValue("monitored_wallets");
-  try {
-    return JSON.parse(raw || "[]");
-  } catch {
-    return [];
-  }
+// Markiert ein Token als getrackt (dauerhaft)
+export async function trackTokenInRedis(key: string, data: any) {
+  const redisKey = 'tracked:${key}';
+  await setRedisValue(redisKey, data);
 }
 
-export async function addWalletToDB(address: string, data: string) {
-  await setRedisValue(`smartmoney:${address}`, data); // oder "insider:${address}" etc.
+export const investLevelArray = ["M0", "M1", "M2", "M3", "M4", "M5"];
+  
+
+// Alternative mit Ablaufzeit (z. B. 6h = 21600 Sekunden)
+export async function trackTokenWithTTL(tokenId: string, ttlSeconds = 21600): Promise<void> {
+  await redis.set(`tracked:${tokenId}`, '1', 'EX', ttlSeconds)
+}
+export async function saveTokenScores(tokenAddress: string, fomoScore: string, pumpRisk: string) {
+  await redis.hset(`token:${tokenAddress}`, {
+    fomoScore,
+    pumpRisk,
+  });
 }
 
-export async function removeWalletFromDB(address: string, cluster: string) {
-  // Optional: z. B. setze leeren Wert oder delete key
-  await delRedisKey(`${cluster}:${address}`);
+export async function getTokenScores(tokenAddress: string): Promise<{ fomoScore: string, pumpRisk: string }> {
+  const result = await redis.hgetall(`token:${tokenAddress}`)
+  return {
+    fomoScore: result.fomoScore || 'Nicht vorhanden',
+    pumpRisk: result.pumpRisk || 'Nicht vorhanden',
+  };
 }
+

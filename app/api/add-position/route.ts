@@ -1,70 +1,60 @@
 // app/api/add-position/route.ts
 
-import { setRedisValue } from "@/lib/redis";
-import { telegramToggles } from "@/config/telegramToggles";
-import { sendTelegramMessage } from "@/lib/telegram";
-import { sendSellGain, sendSellLoss } from "@/lib/telegram-events";
-import { calculateScoreX } from "@/lib/utils/scorex";
+import { NextResponse } from "next/server";
+import { sendTelegramBuyMessage } from "@/lib/telegram";
+import { v4 as uuidv4 } from "uuid";
+import { Redis } from "ioredis";
+import { setRedisValue } from "@/lib/redis"
+
+const redis = new Redis(process.env.REDIS_URL!);
 
 export async function POST(req: Request) {
   try {
-    const data = await req.json();
+    const body = await req.json();
 
-    // ✅ Prüfung auf gültige Daten
-    if (!data.token || !data.wallet || !data.cluster) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
-        status: 400,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-      });
-    }
+    const {
+      tokenSymbol,
+      tokenAddress,
+      entryPrice,
+      buyTime,
+      strategy,
+    } = body;
 
-    // ✅ ScoreX berechnen
-    const { score, boosts } = calculateScoreX(data.token);
-    data.scoreX = score;
-    data.boosts = boosts;
+    const id = uuidv4();
 
-    // 🧠 Telegram-Benachrichtigungen
-    const tokenSymbol = data.token?.toUpperCase?.() || "???";
-    const gainPercent = data.gain || 150;
-    const lossPercent = data.loss || 50;
+    const trade = {
+      id,
+      tokenSymbol,
+      tokenAddress,
+      entryPrice,
+      buyTime,
+      strategy,
+    };
 
-    if (telegramToggles.global && telegramToggles.tradeSignals) {
-      await sendTelegramMessage(`📈 KAUFSIGNAL: $${tokenSymbol}`);
-    }
+    await redis.set(`trade:${id}`, JSON.stringify(trade));
 
-    if (telegramToggles.global && telegramToggles.tradePerformance) {
-      await sendSellGain(tokenSymbol, gainPercent);
-      await sendSellLoss(tokenSymbol, lossPercent);
-    }
+    await setRedisValue('position:${token.address}', {
+      symbol: tokenSymbol,
+      address: tokenAddress,
+      entryPrice,
+    });
+    // DUMMY-Werte für ScoreX, FomoScore und PumpRisk – später dynamisch machen
+    const scoreX = 72;
+    const fomoScore = "mittel";
+    const pumpRisk = "niedrig";
 
-    // ✅ Redis speichern
-    await setRedisValue(`live:${data.token}`, data);
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
+    // Telegram-Kaufnachricht senden
+    await sendTelegramBuyMessage({
+      address: tokenAddress,
+      symbol: tokenSymbol,
+      scoreX,
+      fomoScore,
+      pumpRisk,
     });
 
-  } catch (err: any) {
-    console.error("REDIS ERROR:", err);
-    return new Response(
-      JSON.stringify({
-        error: "Invalid JSON or Redis error",
-        detail: err?.message || "Unknown error",
-      }),
-      {
-        status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Fehler beim Speichern:", error);
+    return NextResponse.json({ success: false, error: "Fehler beim Speichern" });
   }
 }

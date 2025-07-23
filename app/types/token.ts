@@ -17,6 +17,11 @@ export interface TradeCandidate {
   symbol: string;
   name: string;
   candidate?: string;
-
+  fomoScore: string;
+  pumpRisk: string;
+  scoreX: number;
+  alphaScore: number;
+  influenceScore: number;
+ 
   // ... weitere Felder je nach Bedarf
 }

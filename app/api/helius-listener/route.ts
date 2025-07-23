@@ -1,27 +1,47 @@
+import { fetchRecentRaydiumTokens } from "@/lib/token-fetcher";
+import { isTokenAlreadyTracked, trackTokenInRedis } from "@/lib/redis";
 import { decideTrade } from "@/agent/trade-engine";
-import { fetchRecentRaydiumTokens } from "@/lib/token-fetcher"; // Diese Funktion musst du ggf. selbst schreiben
-import { isTokenAlreadyTracked } from "@/lib/redis"; // Token-Tracking-Cache zur Duplikatvermeidung
+import { sendTelegramBuyMessage } from "@/lib/telegram";
+import { telegramToggles } from "@/config/telegramToggles";
 
 export async function GET() {
   console.log("[HELIUS-LISTENER] Cron Job triggered");
 
-  const tokens = await fetchRecentRaydiumTokens(); // z. B. von Helius
   let newTrades = 0;
+  const tokens = await fetchRecentRaydiumTokens();
 
   for (const token of tokens) {
-    const alreadyTracked = await isTokenAlreadyTracked(token.address);
+    const alreadyTracked = await isTokenAlreadyTracked(`live:${token.address}`);
     if (alreadyTracked) continue;
 
-    const tradeDecision = await decideTrade(token, "M0");
+    const decision = await decideTrade(token, "M0");
 
-    if (tradeDecision) {
+    if (decision && decision.shouldBuy) {
+      if (telegramToggles.global && telegramToggles.tradeSignals) {
+        await sendTelegramBuyMessage({
+          address: token.address,
+          symbol: token.symbol,
+          scoreX: decision.scoreX,
+          fomoScore: token.fomoScore || "unbekannt",
+          pumpRisk: token.pumpRisk || "unbekannt",
+        });
+      }
+
+      await trackTokenInRedis(`live:${token.address}`, {
+        address: token.address,
+        symbol: token.symbol,
+        scoreX: decision.scoreX,
+        boosts: decision.boosts || [],
+        timestamp: Date.now(),
+      });
+
       console.log(`✅ Paper-Trade für ${token.symbol} ausgelöst.`);
       newTrades++;
     }
   }
 
   return new Response(
-    `Listener durchlaufen – ${newTrades} neue Paper-Trades gestartet.`,
+    `✅ Listener abgeschlossen – ${newTrades} neue Paper-Trades gestartet.`,
     { status: 200 }
   );
 }

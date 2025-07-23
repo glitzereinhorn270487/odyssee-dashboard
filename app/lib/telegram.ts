@@ -1,14 +1,33 @@
 // lib/telegram.ts
-export async function sendTelegramMessage(message: string) {
+
+export async function sendTelegramBuyMessage({
+  address,
+  symbol,
+  scoreX,
+  fomoScore,
+  pumpRisk,
+}: {
+  address: string;
+  symbol: string;
+  scoreX: number;
+  fomoScore: string;
+  pumpRisk: string;
+}) {
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.warn("Telegram-Daten fehlen in .env");
-    return;
-  }
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
 
-  const url = `https://api.telegram.org/bot7633687305:AAEvjchGHkQAB0uX8jHLLK-QuMiyMOaPiSQ/sendMessage`;
+  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+  const message = `
+<b>🛒 Neuer Token-Kauf!</b>
+<b>Symbol:</b> ${symbol}
+<b>Adresse:</b> ${address}
+<b>ScoreX:</b> ${scoreX}
+<b>FomoScore:</b> ${fomoScore}
+<b>PumpRisk:</b> ${pumpRisk}
+  `;
 
   await fetch(url, {
     method: "POST",
@@ -16,68 +35,53 @@ export async function sendTelegramMessage(message: string) {
     body: JSON.stringify({
       chat_id: TELEGRAM_CHAT_ID,
       text: message,
+      parse_mode: "HTML",
     }),
   });
 }
 
-// lib/classifier.ts
-export function isInsider(wallet: string): boolean {
-  return wallet.startsWith("INS");
-}
+export async function sendTelegramSellMessage({
+  address,
+  symbol,
+  scoreX,
+  fomoScore,
+  pumpRisk,
+  reason,
+  profit,
+}: {
+  address: string;
+  symbol: string;
+  scoreX: number;
+  fomoScore: string;
+  pumpRisk: string;
+  reason: string;
+  profit: number;
+}) {
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-export function isSmartMoney(wallet: string): boolean {
-  return wallet.startsWith("SM");
-}
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
 
-export function isRedFlag(wallet: string): boolean {
-  return wallet.startsWith("RUG");
-}
+  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
 
-export function isViralX(source: string): boolean {
-  return source.toLowerCase().includes("elon") || source.includes("meme");
-}
+  const message = `
+<b>💰 Token verkauft!</b>
+<b>Symbol:</b> ${symbol}
+<b>Adresse:</b> ${address}
+<b>Grund:</b> ${reason}
+<b>Gewinn/Verlust:</b> ${profit > 0 ? "+" : ""}${profit.toFixed(2)}%
+<b>ScoreX:</b> ${scoreX}
+<b>FomoScore:</b> ${fomoScore}
+<b>PumpRisk:</b> ${pumpRisk}
+  `;
 
-export function isNarrativeMaker(source: string): boolean {
-  return source.toLowerCase().includes("narrative") || source.includes("theme");
-}
-
-// lib/helius-logic.ts
-export async function fetchNewPools() {
-  const res = await fetch("https://api.helius.xyz/v0/pools?since=60", {
-    headers: { "Authorization": `Bearer ${process.env.Helius_API_Key}` }
+  await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      text: message,
+      parse_mode: "HTML",
+    }),
   });
-  const data = await res.json();
-  return data.pools || [];
-}
-
-export async function analyseToken(pool: any) {
-  // Platzhalter-Analyse-Logik – später durch echte ersetzt
-  return {
-    token: pool.tokenSymbol,
-    wallet: pool.creator,
-    source: pool.tweet || "",
-    alphaScore: Math.floor(Math.random() * 100),
-    cluster: "Unknown"
-  };
-}
-
-// lib/price-manager.ts
-export async function getLivePrice(token: string) {
-  const res = await fetch(`https://price-api.example.com/token/${token}`);
-  const data = await res.json();
-  return data.price;
-}
-
-export function checkSellRules(position: any, currentPrice: number) {
-  const buyPrice = position.entryPrice;
-  const gain = (currentPrice - buyPrice) / buyPrice;
-
-  if (gain >= 2) {
-    return { shouldSell: true, reason: "+100% Gewinn erreicht" };
-  }
-  if (gain <= -0.25) {
-    return { shouldSell: true, reason: "Stop-Loss ausgelöst" };
-  }
-
-  return { shouldSell: false, reason: "" };
 }
