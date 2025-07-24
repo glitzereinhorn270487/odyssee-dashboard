@@ -7,7 +7,9 @@ export async function sendTelegramBuyMessage(token: { address: string, symbol: s
   const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
 
   // Hole FomoScore und PumpRisk aus Redis
-  const { fomoScore, pumpRisk } = await getTokenScores(token.address);
+  const scores = await getTokenScores(token.address);
+  const fomoScore = scores?.fomoScore || `N/A`;
+  const pumpRisk = scores?.pumpRisk || `N/A`;
 
   // Erstelle Nachricht
   const message = `

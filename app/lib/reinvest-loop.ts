@@ -17,13 +17,15 @@ const WALLET_ADDRESSES = [
 export async function checkAndReinvest() {
   // OPTIMIERUNG: Nutze redis.mget für eine einzige, schnellere Anfrage für alle Wallets.
   const capitalKeys = WALLET_ADDRESSES.map(address => `wallet:${address}:capital`);
-  const capitalStrings = await redis.mget(capitalKeys);
-
+const capitalStrings = await redis.mget<string[]>(capitalKeys) as (string | null)[];
   // Kapital aller Wallets sicher summieren
-  const totalCapital = capitalStrings.reduce((sum, capitalStr) => {
-    const capital = capitalStr ? parseFloat(capitalStr) : 0;
-    return sum + capital;
-  }, 0);
+  const totalCapital = capitalStrings.reduce((sum: number, capitalStr: string |null) => {
+    if (typeof capitalStr === "string") {
+   const capital = parseFloat(capitalStr);
+   return sum + capital;
+  }
+  return sum;
+  }, 0);  
 
   // Aktuelle globale Stufe holen
   const currentLevel = await redis.get("wallet:global:level") || "NONE";
