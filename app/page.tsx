@@ -1,7 +1,12 @@
+// app/page.tsx (DashboardPage.tsx)
 'use client';
 
 import { useState, useEffect } from 'react';
 import ExportTrades from "./components/dashboard/ExportTrades";
+
+// Importiere Icons für Boosts (angenommen, du hast eine Möglichkeit, diese zu rendern, z.B. React Icons oder einfache Emojis)
+// Für den Anfang nutzen wir Emojis, da sie keine zusätzliche Installation erfordern.
+
 interface Position {
   tradeId: string;
   tokenSymbol: string;
@@ -9,99 +14,304 @@ interface Position {
   currentValueUsd: number;
   pnlPercentage: number;
   strategy?: string;
-  score?: number;
-  boost?: string;
+  scoreX: number; // Aktualisiert auf numerischen ScoreX
+  boostReasons: string[]; // Aktualisiert auf Array von Boost-Gründen
+}
+
+interface TelegramToggles {
+  global: boolean;
+  tradeSignals: boolean;
+  gains: boolean;
+  errors: boolean;
+  nearMisses: boolean;
+  moonshots: boolean;
+  stagnationAlerts: boolean;
+  tradePerformance: boolean;
+  system: boolean;
+  sales: boolean;
 }
 
 export default function DashboardPage() {
   const [positions, setPositions] = useState<Position[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [telegramEnabled, setTelegramEnabled] = useState(true); // Beispieltoggle
+  const [telegramToggles, setTelegramToggles] = useState<TelegramToggles>({
+    global: true, tradeSignals: true, gains: true, errors: true, nearMisses: false,
+    moonshots: true, stagnationAlerts: true, tradePerformance: true, system: true, sales: true
+  }); // Initialisiere mit Standardwerten
+  const [currentInvestmentLevel, setCurrentInvestmentLevel] = useState<string | null>(null);
+  const [botRunning, setBotRunning] = useState(false); // Neuer State für Bot-Status
+  const [totalTrades, setTotalTrades] = useState(0); // Neuer State für Anzahl Trades
+  const [winRate, setWinRate] = useState(0); // Neuer State für Win Rate
+
+
   useEffect(() => {
-   
-    async function fetchLivePositions() {
+    async function fetchData() {
+      setIsLoading(true);
       try {
-        const response = await fetch('/api/live-positions');
-        if (!response.ok) throw new Error('Fehler beim Abrufen: ' + response.status);
-        const result = await response.json();
-        setPositions(result.data || []);
-      } catch (err) {
+        // --- Live Positionen abrufen ---
+        const positionsResponse = await fetch('/api/live-positions');
+        if (!positionsResponse.ok) throw new Error('Fehler beim Abrufen der Positionen: ' + positionsResponse.status);
+        const positionsResult = await positionsResponse.json();
+        // Stellen Sie sicher, dass scoreX und boostReasons korrekt geparst werden
+        setPositions(positionsResult.data.map((p: any) => ({
+          ...p,
+          scoreX: p.scoreX || 0, // Standardwert, falls nicht vorhanden
+          boostReasons: p.boostReasons || [] // Standardwert, falls nicht vorhanden
+        })) || []);
+
+        // --- Telegram Toggles abrufen ---
+        const telegramResponse = await fetch('/api/telegram-settings'); // Neuer Endpunkt
+        if (!telegramResponse.ok) console.error('Fehler beim Abrufen der Telegram-Einstellungen');
+        const telegramSettings = await telegramResponse.json();
+        setTelegramToggles(telegramSettings || telegramToggles); // Fallback auf Standard, wenn API fehlschlägt
+
+        // --- Investment Level abrufen ---
+        const levelResponse = await fetch('/api/investment-level'); // Neuer Endpunkt
+        if (!levelResponse.ok) console.error('Fehler beim Abrufen des Investment-Levels');
+        const levelData = await levelResponse.json();
+        setCurrentInvestmentLevel(levelData.level || 'Unbekannt');
+
+        // --- Bot Status abrufen ---
+        const botStatusResponse = await fetch('/api/bot-status'); // Neuer Endpunkt
+        if (!botStatusResponse.ok) console.error('Fehler beim Abrufen des Bot-Status');
+        const botStatusData = await botStatusResponse.json();
+        setBotRunning(botStatusData.running || false);
+
+        // --- Performance Statistiken abrufen (Platzhalter für V1) ---
+        // Für Paper Trade simulieren wir diese Werte, später echte Daten aus Redis
+        setTotalTrades(Math.floor(Math.random() * 50) + 10); // Dummy-Wert
+        setWinRate(parseFloat((Math.random() * (0.85 - 0.40) + 0.40).toFixed(2)) * 100); // Dummy-Wert 40-85%
+
+      } catch (err: any) {
         setError(String(err));
       } finally {
         setIsLoading(false);
       }
     }
-    fetchLivePositions();
+    fetchData();
+
+    // Optional: Regelmäßiges Polling für Live-Updates (z.B. alle 30 Sekunden)
+    const interval = setInterval(fetchData, 30000); 
+    return () => clearInterval(interval);
   }, []);
-  
+
+  // --- Handhabung des Bot-Status ---
+  const toggleBotStatus = async () => {
+    try {
+      const response = await fetch('/api/bot-control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: botRunning ? 'stop' : 'start' }),
+      });
+      if (!response.ok) throw new Error('Fehler beim Umschalten des Bot-Status');
+      const data = await response.json();
+      setBotRunning(data.running);
+      // alert(`Bot ist jetzt ${data.running ? 'gestartet' : 'gestoppt'}.`); // Ersetzt durch Toast/Modale
+    } catch (err: any) {
+      // alert(`Fehler beim Umschalten des Bot-Status: ${err.message}`); // Ersetzt durch Toast/Modale
+      console.error(`Fehler beim Umschalten des Bot-Status: ${err.message}`);
+    }
+  };
+
+  // --- Handhabung der Telegram Toggles ---
+  const toggleTelegramSetting = async (key: keyof TelegramToggles) => {
+    const newToggles = { ...telegramToggles, [key]: !telegramToggles[key] };
+    setTelegramToggles(newToggles); // Optimistisches Update
+
+    try {
+      const response = await fetch('/api/telegram-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newToggles),
+      });
+      if (!response.ok) {
+        throw new Error('Fehler beim Speichern der Telegram-Einstellungen');
+      }
+      console.log(`Telegram-Einstellung ${key} erfolgreich aktualisiert.`);
+    } catch (err: any) {
+      setError(`Fehler beim Speichern: ${err.message}`);
+      setTelegramToggles(prev => ({ ...prev, [key]: !prev[key] })); // Rollback bei Fehler
+    }
+  };
+
+  // Hilfsfunktion zur Darstellung der Boost-Icons
+  const renderBoosts = (boosts: string[]) => {
+    if (!boosts || boosts.length === 0) return '–';
+    return boosts.map((boost, index) => {
+      let icon = '';
+      let label = boost;
+      switch (boost) {
+        case 'Insider-Beteiligung':
+          icon = '🕵️‍♂️';
+          break;
+        case 'Smart-Money-Cluster':
+        case 'Smart-Money-Beteiligung':
+          icon = '🐳';
+          break;
+        case 'LP Burned/Locked': // Angenommen, ScoreXEngine gibt dies zurück
+          icon = '🔒';
+          break;
+        default:
+          icon = '✨'; // Generischer Fallback
+      }
+      return (
+        <span key={index} className="flex items-center space-x-1 whitespace-nowrap">
+          {icon} <span className="text-xs text-gray-400">{label}</span>
+        </span>
+      );
+    });
+  };
+
+  // Hilfsfunktion zur Farbcodierung des ScoreX
+  const getScoreXColor = (score: number) => {
+    if (score >= 85) return 'text-green-400'; // Hellgrün
+    if (score >= 70) return 'text-blue-300'; // Helles Blau
+    if (score >= 60) return 'text-orange-300'; // Helles Orange
+    return 'text-gray-400';
+  };
+
   const pnlSum = positions.reduce((acc, p) => acc + (p.currentValueUsd - p.initialInvestmentUsd), 0);
   const invested = positions.reduce((acc, p) => acc + p.initialInvestmentUsd, 0);
   const returnPerc = invested > 0 ? (pnlSum / invested) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6 space-y-6">
-      <h1 className="text-3xl font-bold">📊 Odyssee Dashboard</h1>
+      <h1 className="text-4xl font-extrabold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+        🌌 Odyssee Handelszentrale
+      </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gray-800 rounded-2xl p-4 shadow">
-          <h2 className="text-lg">💰 Gesamte Investition</h2>
-          <p className="text-2xl font-mono">{invested.toFixed(2)} $</p>
-        </div>
-        <div className="bg-gray-800 rounded-2xl p-4 shadow">
-          <h2 className="text-lg">📈 Gesamt-Gewinn/Verlust</h2>
-          <p className={`text-2xl font-mono ${returnPerc >= 0 ? 'text-green-400' : 'text-red-400'}`}>{returnPerc.toFixed(2)}%</p>
-        </div>
-        <ExportTrades />
-        <div className="bg-gray-800 rounded-2xl p-4 shadow">
-          <h2 className="text-lg">📬 Telegram-Status</h2>
+      {/* Kontroll- und Übersichtsboxen */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Bot-Status */}
+        <div className="bg-gray-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between items-center">
+          <h2 className="text-xl font-semibold mb-3">🤖 Bot-Status</h2>
+          <span className={`text-3xl font-bold ${botRunning ? 'text-green-500' : 'text-red-500'}`}>
+            {botRunning ? 'ONLINE' : 'OFFLINE'}
+          </span>
           <button
-            className={`mt-2 px-4 py-2 rounded font-bold ${telegramEnabled ? 'bg-green-600' : 'bg-red-600'}`}
-            onClick={() => setTelegramEnabled(!telegramEnabled)}
+            className={`mt-4 px-6 py-2 rounded-xl font-bold text-white transition-all duration-300
+                        ${botRunning ? 'bg-red-700 hover:bg-red-600' : 'bg-green-700 hover:bg-green-600'}`}
+            onClick={toggleBotStatus}
           >
-            {telegramEnabled ? 'Aktiviert' : 'Deaktiviert'}
+            {botRunning ? 'Bot Stoppen' : 'Bot Starten'}
           </button>
+        </div>
+
+        {/* Gesamt-Performance */}
+        <div className="bg-gray-800 rounded-2xl p-5 shadow-lg">
+          <h2 className="text-xl font-semibold mb-3">💰 Gesamt-Portfolio</h2>
+          <p className="text-3xl font-mono">
+            {invested.toFixed(2)} <span className="text-gray-400 text-lg">$ Investiert</span>
+          </p>
+          <p className={`text-3xl font-mono ${returnPerc >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {returnPerc.toFixed(2)}% <span className="text-gray-400 text-lg">G/V</span>
+          </p>
+        </div>
+
+        {/* Investment-Level */}
+        <div className="bg-gray-800 rounded-2xl p-5 shadow-lg">
+          <h2 className="text-xl font-semibold mb-3">📈 Investment-Stufe</h2>
+          <p className="text-4xl font-extrabold text-blue-400">
+            {currentInvestmentLevel ?? 'Lade...'}
+          </p>
+          <p className="text-sm text-gray-400 mt-2">
+            Steuert Einsatzhöhe & Risikobereitschaft.
+          </p>
+        </div>
+
+        {/* Performance Stats */}
+        <div className="bg-gray-800 rounded-2xl p-5 shadow-lg">
+          <h2 className="text-xl font-semibold mb-3">📊 Bot-Statistiken</h2>
+          <p className="text-2xl font-mono">
+            {totalTrades} <span className="text-gray-400 text-lg">Trades</span>
+          </p>
+          <p className="text-2xl font-mono text-cyan-400">
+            {winRate.toFixed(2)}% <span className="text-gray-400 text-lg">Win Rate</span>
+          </p>
         </div>
       </div>
 
-      <div className="bg-gray-800 rounded-2xl p-4 shadow">
+      {/* Telegram Management */}
+      <div className="bg-gray-800 rounded-2xl p-5 shadow-lg mb-8">
+        <h2 className="text-xl font-bold mb-4 flex items-center">
+          <span className="mr-2">✉️</span> Telegram-Benachrichtigungen
+          <button
+            className={`ml-auto px-4 py-2 rounded-full text-sm font-bold transition-colors duration-300
+                        ${telegramToggles.global ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}
+            onClick={() => toggleTelegramSetting('global')}
+          >
+            {telegramToggles.global ? 'Global Aktiv' : 'Global Deaktiviert'}
+          </button>
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+          {Object.entries(telegramToggles).map(([key, value]) => (
+            key !== 'global' && ( // "global" separat behandeln
+              <div key={key} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg">
+                <span className="text-sm font-medium">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                <input
+                  type="checkbox"
+                  checked={value}
+                  onChange={() => toggleTelegramSetting(key as keyof TelegramToggles)}
+                  className="form-checkbox h-5 w-5 text-blue-600 rounded"
+                />
+              </div>
+            )
+          ))}
+        </div>
+      </div>
+
+
+      {/* Offene Positionen Tabelle */}
+      <div className="bg-gray-800 rounded-2xl p-5 shadow-lg">
         <h2 className="text-xl font-bold mb-4">📂 Offene Positionen</h2>
         {isLoading ? (
-          <p>Lade Positionen...</p>
+          <p className="text-gray-400">Lade Positionen und Statistiken...</p>
         ) : error ? (
           <p className="text-red-500">Fehler: {error}</p>
         ) : positions.length === 0 ? (
-          <p>Keine offenen Positionen.</p>
+          <p className="text-gray-400">Keine offenen Positionen.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="bg-gray-700 text-left">
-                  <th className="p-2">Token</th>
-                  <th className="p-2">Investiert</th>
-                  <th className="p-2">Aktuell</th>
-                  <th className="p-2">G/V (%)</th>
-                  <th className="p-2">Strategie</th>
-                  <th className="p-2">Score</th>
-                  <th className="p-2">Boost</th>
+                <tr className="bg-gray-700 text-left text-gray-300">
+                  <th className="p-3 rounded-tl-lg">Token</th>
+                  <th className="p-3">Investiert ($)</th>
+                  <th className="p-3">Aktuell ($)</th>
+                  <th className="p-3">G/V (%)</th>
+                  <th className="p-3">Strategie</th>
+                  <th className="p-3">ScoreX</th>
+                  <th className="p-3 rounded-tr-lg">Boosts</th>
                 </tr>
               </thead>
               <tbody>
                 {positions.map(pos => (
-                  <tr key={pos.tradeId} className="border-t border-gray-700">
-                    <td className="p-2">{pos.tokenSymbol}</td>
-                    <td className="p-2">{pos.initialInvestmentUsd.toFixed(2)} $</td>
-                    <td className="p-2">{pos.currentValueUsd.toFixed(2)} $</td>
-                    <td className={`p-2 ${pos.pnlPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`}>{pos.pnlPercentage.toFixed(2)}%</td>
-                    <td className="p-2">{pos.strategy ?? '–'}</td>
-                    <td className="p-2">{pos.score ?? '–'}</td>
-                    <td className="p-2">{pos.boost ?? '–'}</td>
+                  <tr key={pos.tradeId} className="border-t border-gray-700 hover:bg-gray-700 transition-colors duration-200">
+                    <td className="p-3 font-medium text-white">{pos.tokenSymbol}</td>
+                    <td className="p-3">{pos.initialInvestmentUsd.toFixed(2)}</td>
+                    <td className="p-3">{pos.currentValueUsd.toFixed(2)}</td>
+                    <td className={`p-3 font-semibold ${pos.pnlPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {pos.pnlPercentage.toFixed(2)}%
+                    </td>
+                    <td className="p-3 text-gray-300">{pos.strategy ?? '–'}</td>
+                    <td className={`p-3 font-bold ${getScoreXColor(pos.scoreX)}`}>
+                      {pos.scoreX.toFixed(0)}
+                    </td>
+                    <td className="p-3 space-y-1">
+                      {renderBoosts(pos.boostReasons)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
+      </div>
+      
+      {/* Export Trades Komponente */}
+      <div className="bg-gray-800 rounded-2xl p-5 shadow-lg">
+        <ExportTrades />
       </div>
     </div>
   );

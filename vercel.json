@@ -7,6 +7,14 @@
     {
       "path": "/api/reinvest",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/momentum-scan",
+      "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/chack-for-sell",
+      "schedule": "*/1 * * * *"
     }
   ]
 }
