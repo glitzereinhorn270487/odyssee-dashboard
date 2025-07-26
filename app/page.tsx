@@ -4,6 +4,9 @@
 import { useState, useEffect } from 'react';
 import ExportTrades from "./components/dashboard/ExportTrades";
 
+// Importiere Icons für Boosts (angenommen, du hast eine Möglichkeit, diese zu rendern, z.B. React Icons oder einfache Emojis)
+// Für den Anfang nutzen wir Emojis, da sie keine zusätzliche Installation erfordern.
+
 interface Position {
   tradeId: string;
   tokenSymbol: string;
@@ -11,8 +14,8 @@ interface Position {
   currentValueUsd: number;
   pnlPercentage: number;
   strategy?: string;
-  scoreX: number; 
-  boostReasons: string[]; 
+  scoreX: number; // Aktualisiert auf numerischen ScoreX
+  boostReasons: string[]; // Aktualisiert auf Array von Boost-Gründen
 }
 
 interface TelegramToggles {
@@ -35,12 +38,13 @@ export default function DashboardPage() {
   const [telegramToggles, setTelegramToggles] = useState<TelegramToggles>({
     global: true, tradeSignals: true, gains: true, errors: true, nearMisses: false,
     moonshots: true, stagnationAlerts: true, tradePerformance: true, system: true, sales: true
-  }); 
+  }); // Initialisiere mit Standardwerten
   const [currentInvestmentLevel, setCurrentInvestmentLevel] = useState<string | null>(null);
-  const [botRunning, setBotRunning] = useState(false); 
-  const [totalTrades, setTotalTrades] = useState(0); 
-  const [winRate, setWinRate] = useState(0); 
-  const [currentVirtualCapital, setCurrentVirtualCapital] = useState<number>(0); // NEU: State für Kapital
+  const [botRunning, setBotRunning] = useState(false); // Neuer State für Bot-Status
+  const [totalTrades, setTotalTrades] = useState(0); // Neuer State für Anzahl Trades
+  const [winRate, setWinRate] = useState(0); // Neuer State für Win Rate
+  const [currentVirtualCapital, setCurrentVirtualCapital] = useState<number>(0); // State für Kapital
+
 
   useEffect(() => {
     async function fetchData() {
@@ -80,8 +84,8 @@ export default function DashboardPage() {
         setBotRunning(botStatusData.running || false);
         console.log("[Dashboard] Bot Status geladen:", botStatusData.running);
         
-        // --- Virtuelles Kapital abrufen (NEU) ---
-        const capitalResponse = await fetch('/api/virtual-capital'); // NEUER ENDPUNKT
+        // --- Virtuelles Kapital abrufen ---
+        const capitalResponse = await fetch('/api/virtual-capital'); 
         if (!capitalResponse.ok) console.error('Fehler beim Abrufen des virtuellen Kapitals');
         const capitalData = await capitalResponse.json();
         setCurrentVirtualCapital(capitalData.capital || 0);
@@ -106,12 +110,14 @@ export default function DashboardPage() {
     }
     fetchData();
 
+    // Optional: Regelmäßiges Polling für Live-Updates (z.B. alle 30 Sekunden)
     const interval = setInterval(fetchData, 30000); 
     return () => clearInterval(interval);
   }, []);
 
   // --- Handhabung des Bot-Status ---
   const toggleBotStatus = async () => {
+    alert("Button wurde geklickt!"); // <--- DEBUG-ZEILE HIER
     console.log("toggleBotStatus wurde aufgerufen!"); 
     try {
       const action = botRunning ? 'stop' : 'start';
@@ -198,7 +204,6 @@ export default function DashboardPage() {
   };
 
   const pnlSum = positions.reduce((acc, p) => acc + (p.currentValueUsd - p.initialInvestmentUsd), 0);
-  // KORREKTUR: Investiertes Kapital kommt jetzt vom State currentVirtualCapital
   const invested = currentVirtualCapital; 
   const returnPerc = invested > 0 ? (pnlSum / invested) * 100 : 0;
 
@@ -229,7 +234,7 @@ export default function DashboardPage() {
         <div className="bg-gray-800 rounded-2xl p-5 shadow-lg">
           <h2 className="text-xl font-semibold mb-3">💰 Gesamt-Portfolio</h2>
           <p className="text-3xl font-mono">
-            {invested.toFixed(2)} <span className="text-gray-400 text-lg">$ Kapital</span> {/* Text geändert */}
+            {invested.toFixed(2)} <span className="text-gray-400 text-lg">$ Kapital</span> 
           </p>
           <p className={`text-3xl font-mono ${returnPerc >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {returnPerc.toFixed(2)}% <span className="text-gray-400 text-lg">G/V</span>
@@ -322,7 +327,7 @@ export default function DashboardPage() {
                       {pos.pnlPercentage.toFixed(2)}%
                     </td>
                     <td className="p-3 text-gray-300">{pos.strategy ?? '–'}</td>
-                    <td className="p-3 font-bold ${getScoreXColor(pos.scoreX)}">
+                    <td className={`p-3 font-bold ${getScoreXColor(pos.scoreX)}`}>
                       {pos.scoreX.toFixed(0)}
                     </td>
                     <td className="p-3 space-y-1">
