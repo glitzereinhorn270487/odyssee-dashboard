@@ -1,7 +1,7 @@
 // app/api/initialize-bot/route.ts
 
 import { NextResponse } from 'next/server';
-import { initializeVirtualCapital } from 'app/agent/trade-engine'; // Korrekter Pfad zur Funktion
+import { initializeVirtualCapital } from '../../agent/trade-engine'; // Korrekter Pfad zur Funktion
 
 export async function GET() {
   try {
