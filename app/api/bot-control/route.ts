@@ -1,6 +1,6 @@
 // /app/api/bot-control/route.ts
 import { NextResponse } from 'next/server';
-import { setBotRunningStatus, getBotRunningStatus } from '@/lib/bot-status';
+import { setBotRunningStatus, getBotRunningStatus } from '@/lib/bot-status'; // Korrekter Import
 
 export async function POST(req: Request) {
   try {
