@@ -196,9 +196,9 @@ export async function initializeVirtualCapital(initialAmount: number = 1000): Pr
 /**
  * Ruft das aktuelle virtuelle Kapital ab.
  */
-async function getVirtualCapital(): Promise<number> {
+export async function getVirtualCapital(): Promise<number> { // <-- 'export' hinzugefügt
   const capital = await getRedisValue<number>(VIRTUAL_CAPITAL_KEY); 
-  console.log(`[PaperTrade] Aktuelles virtuelles Kapital aus Redis gelesen: ${capital ?? 0}$`); // NEUER LOG
+  console.log(`[PaperTrade] Aktuelles virtuelles Kapital aus Redis gelesen: ${capital ?? 0}$`); 
   return capital ?? 0; 
 }
 
