@@ -4,9 +4,6 @@
 import { useState, useEffect } from 'react';
 import ExportTrades from "./components/dashboard/ExportTrades";
 
-// Importiere Icons für Boosts (angenommen, du hast eine Möglichkeit, diese zu rendern, z.B. React Icons oder einfache Emojis)
-// Für den Anfang nutzen wir Emojis, da sie keine zusätzliche Installation erfordern.
-
 interface Position {
   tradeId: string;
   tokenSymbol: string;
@@ -14,8 +11,8 @@ interface Position {
   currentValueUsd: number;
   pnlPercentage: number;
   strategy?: string;
-  scoreX: number; // Aktualisiert auf numerischen ScoreX
-  boostReasons: string[]; // Aktualisiert auf Array von Boost-Gründen
+  scoreX: number; 
+  boostReasons: string[]; 
 }
 
 interface TelegramToggles {
@@ -38,13 +35,12 @@ export default function DashboardPage() {
   const [telegramToggles, setTelegramToggles] = useState<TelegramToggles>({
     global: true, tradeSignals: true, gains: true, errors: true, nearMisses: false,
     moonshots: true, stagnationAlerts: true, tradePerformance: true, system: true, sales: true
-  }); // Initialisiere mit Standardwerten
+  }); 
   const [currentInvestmentLevel, setCurrentInvestmentLevel] = useState<string | null>(null);
-  const [botRunning, setBotRunning] = useState(false); // Neuer State für Bot-Status
-  const [totalTrades, setTotalTrades] = useState(0); // Neuer State für Anzahl Trades
-  const [winRate, setWinRate] = useState(0); // Neuer State für Win Rate
-  const [currentVirtualCapital, setCurrentVirtualCapital] = useState<number>(0); // State für Kapital
-
+  const [botRunning, setBotRunning] = useState(false); 
+  const [totalTrades, setTotalTrades] = useState(0); 
+  const [winRate, setWinRate] = useState(0); 
+  const [currentVirtualCapital, setCurrentVirtualCapital] = useState<number>(0); // NEU: State für Kapital
 
   useEffect(() => {
     async function fetchData() {
@@ -82,14 +78,14 @@ export default function DashboardPage() {
         if (!botStatusResponse.ok) console.error('Fehler beim Abrufen des Bot-Status');
         const botStatusData = await botStatusResponse.json();
         setBotRunning(botStatusData.running || false);
-        console.log("[Dashboard] Bot Status geladen:", botStatusData.running);
+        console.log("[Dashboard] Bot Status geladen (von API):", botStatusData.running); // NEUER LOG
         
-        // --- Virtuelles Kapital abrufen ---
-        const capitalResponse = await fetch('/api/virtual-capital'); 
+        // --- Virtuelles Kapital abrufen (NEU) ---
+        const capitalResponse = await fetch('/api/virtual-capital'); // NEUER ENDPUNKT
         if (!capitalResponse.ok) console.error('Fehler beim Abrufen des virtuellen Kapitals');
         const capitalData = await capitalResponse.json();
         setCurrentVirtualCapital(capitalData.capital || 0);
-        console.log("[Dashboard] Virtuelles Kapital geladen:", capitalData.capital);
+        console.log("[Dashboard] Virtuelles Kapital geladen (von API):", capitalData.capital); // NEUER LOG
 
         // --- Performance Statistiken abrufen ---
         const perfStatsResponse = await fetch('/api/performance-stats');
@@ -136,7 +132,7 @@ export default function DashboardPage() {
 
       const data = await response.json();
       console.log("[Dashboard] Antwort vom Backend (data):", data); 
-      console.log("[Dashboard] data.success:", data.success, "data.running:", data.running); // Diese Zeile loggt die genaue Antwort
+      console.log("[Dashboard] data.success:", data.success, "data.running:", data.running); 
 
 
       setBotRunning(data.running);
