@@ -117,7 +117,7 @@ export default function DashboardPage() {
 
   // --- Handhabung des Bot-Status ---
   const toggleBotStatus = async () => {
-    alert("Button wurde geklickt!"); // <--- DEBUG-ZEILE HIER
+    // alert("Button wurde geklickt!"); // <--- DEBUG-ZEILE HIER (wenn du sie wieder aktivieren willst)
     console.log("toggleBotStatus wurde aufgerufen!"); 
     try {
       const action = botRunning ? 'stop' : 'start';
@@ -137,6 +137,8 @@ export default function DashboardPage() {
 
       const data = await response.json();
       console.log("[Dashboard] Antwort vom Backend (data):", data); 
+      console.log("[Dashboard] data.success:", data.success, "data.running:", data.running); // Diese Zeile loggt die genaue Antwort
+
 
       setBotRunning(data.running);
       console.log(`[Dashboard] Bot-Status im Frontend aktualisiert auf: ${data.running ? 'ONLINE' : 'OFFLINE'}.`); 
