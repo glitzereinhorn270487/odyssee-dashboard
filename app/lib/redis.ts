@@ -25,8 +25,16 @@ export async function getRedisValue<T>(key: string): Promise<T | null> {
  * @param value Der zu speichernde Wert.
  */
 export async function setRedisValue<T>(key: string, value: T): Promise<void> {
-  // Upstash Redis erwartet direkt den Wert (Objekt/Array wird automatisch serialisiert)
-  await redis.set(key, value); 
+  // KORREKTUR: Verwende redis.set mit JSON.stringify für komplexe Objekte.
+  // Für einfache Strings wie 'true'/'false' kann man es direkt übergeben.
+  // Da wir hier generisch sind, ist JSON.stringify am sichersten.
+  // Upstash Redis behandelt primitive Typen wie Strings und Zahlen direkt.
+  // Für Booleans als String 'true'/'false' ist es auch direkt.
+  if (typeof value === 'object' && value !== null) {
+    await redis.set(key, JSON.stringify(value));
+  } else {
+    await redis.set(key, value as string | number); // Cast zu string | number für einfache Typen
+  }
 }
 
 /**
