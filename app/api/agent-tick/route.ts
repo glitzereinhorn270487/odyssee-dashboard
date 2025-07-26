@@ -113,7 +113,7 @@ export async function GET() {
     }
     return NextResponse.json(
       { success: false, message: "Ein interner Fehler ist aufgetreten.", error: error.message },
-      { status: 500 }
+      { status: 500 } 
     );
   }
 }
