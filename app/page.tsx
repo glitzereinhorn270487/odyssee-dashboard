@@ -103,19 +103,30 @@ export default function DashboardPage() {
 
   // --- Handhabung des Bot-Status ---
   const toggleBotStatus = async () => {
-    console.log("toggleBotStatus wurde aufgerufen!"); // <--- DEBUG-ZEILE HIER
+    alert("Button wurde geklickt!"); // <--- DEBUG-ZEILE HIER
+    console.log("toggleBotStatus wurde aufgerufen!"); 
     try {
       const response = await fetch('/api/bot-control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: botRunning ? 'stop' : 'start' }),
       });
-      if (!response.ok) throw new Error('Fehler beim Umschalten des Bot-Status');
+
+      console.log("Fetch-Anfrage gesendet, Response erhalten. Status:", response.status, response.ok); 
+
+      if (!response.ok) {
+        const errorText = await response.text(); // Versuche, den Fehlertext zu lesen
+        throw new Error('Fehler beim Umschalten des Bot-Status: ' + response.status + ' - ' + errorText);
+      }
+
       const data = await response.json();
+      console.log("Antwort vom Backend (data):", data); 
+
       setBotRunning(data.running);
-      console.log(`Bot ist jetzt ${data.running ? 'gestartet' : 'gestoppt'}.`);
+      console.log(`Bot-Status im Frontend aktualisiert auf: ${data.running ? 'ONLINE' : 'OFFLINE'}.`); 
+
     } catch (err: any) {
-      console.error(`Fehler beim Umschalten des Bot-Status: ${err.message}`);
+      console.error(`Fehler im toggleBotStatus Catch-Block: ${err.message}`);
     }
   };
 
