@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 // KORREKTUR: Nur importieren, nicht exportieren!
 import { getBotRunningStatus } from '@/lib/bot-status'; 
 
+
 export async function GET() {
   try {
     const running = await getBotRunningStatus();

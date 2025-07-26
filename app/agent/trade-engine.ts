@@ -2,7 +2,7 @@
 
 import { Helius } from "helius-sdk";
 import redis from "@/lib/redisClient"; 
-import { getMonitoredWallets, getSmartMoneyWallets, getRedisValue, setRedisValue, delRedisKey, getAllKeys } from "@/lib/redis"; 
+import { getMonitoredWallets,  getRedisValue, setRedisValue, delRedisKey, getAllKeys } from "@/lib/redis"; 
 import { ScoreXEngine, type TokenInputData, type ScoreXResult } from "@/lib/scoring";
 import { investmentLevels, getInvestmentLevel } from "@/lib/investment-level";
 import { sendTelegramBuyMessage, sendTelegramSellMessage, sendTelegramSystemMessage } from "@/lib/telegram";
@@ -230,17 +230,17 @@ export async function decideTrade(token: { address: string; symbol: string; name
   try {
     const helius = new Helius(process.env.HELIUS_API_KEY!); 
     
-    const [lpIsLocked, gini, topHolderShare, earlyBuyers, insiderWallets, smartMoneyWallets] = await Promise.all([
+    const [lpIsLocked, gini, topHolderShare, earlyBuyers, insiderWallets, ] = await Promise.all([
       checkLpStatus(helius, token.address),
       getGiniCoefficient(helius, token.address),
       getTopHolderShare(helius, token.address),
       getEarlyBuyers(helius, token.address),
       getMonitoredWallets(), 
-      getSmartMoneyWallets(), 
+      smartMoneyWallets(), 
     ]);
 
-    const insiderHits = earlyBuyers.filter(buyer => insiderWallets.includes(buyer)).length;
-    const smartMoneyHits = earlyBuyers.filter(buyer => smartMoneyWallets.includes(buyer)).length;
+    const insiderHits = earlyBuyers.filter((buyer: any) => insiderWallets.includes(buyer)).length;
+    const smartMoneyHits = earlyBuyers.filter((buyer: any) => smartMoneyWallets.length);
 
     const tokenData: TokenInputData = {
       address: token.address,
@@ -248,7 +248,7 @@ export async function decideTrade(token: { address: string; symbol: string; name
       gini,
       topHolderShare,
       insiderHits,
-      smartMoneyHits,
+      smartMoneyHits: 0
     };
 
     const scoringEngine = new ScoreXEngine(tokenData);
@@ -414,3 +414,7 @@ export async function checkForSell(): Promise<void> {
     }
   }
 }
+function smartMoneyWallets(): any {
+  throw new Error("Function not implemented.");
+}
+

@@ -3,6 +3,14 @@ import redis from '@/lib/redisClient'; // Pfad ggf. anpassen
 
 const BOT_STATUS_KEY = 'agent:status:running';
 
+export async function ensureBotStatusInitialized(): Promise<void> {
+  const current = await redis.get(BOT_STATUS_KEY);
+  if (current === null) {
+    await redis.set(BOT_STATUS_KEY, "false");
+    console.log("[BotStatusLib] Initialer Botstatus wurde auf 'false' gesetzt.");
+  }
+}
+
 /**
  * Holt den aktuellen Status des Bots aus Redis.
  */

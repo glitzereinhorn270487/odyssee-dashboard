@@ -7,6 +7,9 @@ import { setRedisValue, isTokenAlreadyTracked } from '@/lib/redis'; // trackToke
 import { sendTelegramSystemMessage } from '@/lib/telegram'; // sendTelegramSystemMessage hinzugefügt
 import { getTelegramToggles } from '@/config/telegramToggles'; // getTelegramToggles importiert
 import { getBotRunningStatus } from '@/lib/bot-status'; // getBotRunningStatus importiert
+import { ensureBotStatusInitialized } from '@/lib/bot-status';
+
+await ensureBotStatusInitialized();
 
 export async function POST(req: Request) {
   // Prüfe, ob der Bot überhaupt laufen soll

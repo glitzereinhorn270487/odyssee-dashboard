@@ -116,11 +116,13 @@ export async function getMonitoredWallets(): Promise<string[]> {
   return keys.map((key: string) => key.split(":")[1]); // Extrahiere die Adresse nach dem Präfix
 }
 
-/**
- * Ruft alle Wallets ab, die als "smartmoney" markiert sind.
- * @returns Ein Array von SmartMoney-Wallet-Adressen.
- */
-export async function getSmartMoneyWallets(): Promise<string[]> {
-  const keys = await getAllKeys("smartmoney:*"); // Annahme: SmartMoney-Wallets sind mit "smartmoney:" präfigiert
-  return keys.map((key: string) => key.split(":")[1]);
+const key = 'bot:status:running';
+
+export async function setBotRunningStatus(status: boolean) {
+  await redis.set(key, status ? '1' : '0');
+}
+
+export async function getBotRunningStatus(): Promise<boolean> {
+  const val = await redis.get(key);
+  return val === '1';
 }
