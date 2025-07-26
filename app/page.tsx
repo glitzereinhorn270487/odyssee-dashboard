@@ -4,9 +4,6 @@
 import { useState, useEffect } from 'react';
 import ExportTrades from "./components/dashboard/ExportTrades";
 
-// Importiere Icons für Boosts (angenommen, du hast eine Möglichkeit, diese zu rendern, z.B. React Icons oder einfache Emojis)
-// Für den Anfang nutzen wir Emojis, da sie keine zusätzliche Installation erfordern.
-
 interface Position {
   tradeId: string;
   tokenSymbol: string;
@@ -14,8 +11,8 @@ interface Position {
   currentValueUsd: number;
   pnlPercentage: number;
   strategy?: string;
-  scoreX: number; // Aktualisiert auf numerischen ScoreX
-  boostReasons: string[]; // Aktualisiert auf Array von Boost-Gründen
+  scoreX: number; 
+  boostReasons: string[]; 
 }
 
 interface TelegramToggles {
@@ -38,102 +35,115 @@ export default function DashboardPage() {
   const [telegramToggles, setTelegramToggles] = useState<TelegramToggles>({
     global: true, tradeSignals: true, gains: true, errors: true, nearMisses: false,
     moonshots: true, stagnationAlerts: true, tradePerformance: true, system: true, sales: true
-  }); // Initialisiere mit Standardwerten
+  }); 
   const [currentInvestmentLevel, setCurrentInvestmentLevel] = useState<string | null>(null);
-  const [botRunning, setBotRunning] = useState(false); // Neuer State für Bot-Status
-  const [totalTrades, setTotalTrades] = useState(0); // Neuer State für Anzahl Trades
-  const [winRate, setWinRate] = useState(0); // Neuer State für Win Rate
-
+  const [botRunning, setBotRunning] = useState(false); 
+  const [totalTrades, setTotalTrades] = useState(0); 
+  const [winRate, setWinRate] = useState(0); 
+  const [currentVirtualCapital, setCurrentVirtualCapital] = useState<number>(0); // NEU: State für Kapital
 
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
+      console.log("[Dashboard] fetchData wird aufgerufen...");
       try {
         // --- Live Positionen abrufen ---
         const positionsResponse = await fetch('/api/live-positions');
-        if (!positionsResponse.ok) throw new Error('Fehler beim Abrufen der Positionen: ' + positionsResponse.status);
+        if (!positionsResponse.ok) console.error('Fehler beim Abrufen der Positionen: ' + positionsResponse.status);
         const positionsResult = await positionsResponse.json();
-        // Stellen Sie sicher, dass scoreX und boostReasons korrekt geparst werden
         setPositions(positionsResult.data.map((p: any) => ({
           ...p,
-          scoreX: p.scoreX || 0, // Standardwert, falls nicht vorhanden
-          boostReasons: p.boostReasons || [] // Standardwert, falls nicht vorhanden
+          scoreX: p.scoreX || 0, 
+          boostReasons: p.boostReasons || [] 
         })) || []);
+        console.log("[Dashboard] Positionen geladen:", positionsResult.data);
+
 
         // --- Telegram Toggles abrufen ---
-        const telegramResponse = await fetch('/api/telegram-settings'); // Neuer Endpunkt
+        const telegramResponse = await fetch('/api/telegram-settings'); 
         if (!telegramResponse.ok) console.error('Fehler beim Abrufen der Telegram-Einstellungen');
         const telegramSettings = await telegramResponse.json();
-        setTelegramToggles(telegramSettings || telegramToggles); // Fallback auf Standard, wenn API fehlschlägt
+        setTelegramToggles(telegramSettings || telegramToggles); 
+        console.log("[Dashboard] Telegram Toggles geladen:", telegramSettings);
 
         // --- Investment Level abrufen ---
-        const levelResponse = await fetch('/api/investment-level'); // Neuer Endpunkt
+        const levelResponse = await fetch('/api/investment-level'); 
         if (!levelResponse.ok) console.error('Fehler beim Abrufen des Investment-Levels');
         const levelData = await levelResponse.json();
         setCurrentInvestmentLevel(levelData.level || 'Unbekannt');
+        console.log("[Dashboard] Investment Level geladen:", levelData.level);
 
         // --- Bot Status abrufen ---
-        const botStatusResponse = await fetch('/api/bot-status'); // Neuer Endpunkt
+        const botStatusResponse = await fetch('/api/bot-status'); 
         if (!botStatusResponse.ok) console.error('Fehler beim Abrufen des Bot-Status');
         const botStatusData = await botStatusResponse.json();
         setBotRunning(botStatusData.running || false);
+        console.log("[Dashboard] Bot Status geladen:", botStatusData.running);
+        
+        // --- Virtuelles Kapital abrufen (NEU) ---
+        const capitalResponse = await fetch('/api/virtual-capital'); // NEUER ENDPUNKT
+        if (!capitalResponse.ok) console.error('Fehler beim Abrufen des virtuellen Kapitals');
+        const capitalData = await capitalResponse.json();
+        setCurrentVirtualCapital(capitalData.capital || 0);
+        console.log("[Dashboard] Virtuelles Kapital geladen:", capitalData.capital);
 
-        // --- Performance Statistiken abrufen (Platzhalter für V1) ---
-        // Für Paper Trade simulieren wir diese Werte, später echte Daten aus Redis
-        // KORREKTUR: Abruf von Performance-Statistiken über den neuen Endpunkt
+        // --- Performance Statistiken abrufen ---
         const perfStatsResponse = await fetch('/api/performance-stats');
         if (!perfStatsResponse.ok) console.error('Fehler beim Abrufen der Performance-Statistiken');
         const perfStatsData = await perfStatsResponse.json();
         setTotalTrades(perfStatsData.totalTrades || 0);
         setWinRate(perfStatsData.winRate || 0);
+        console.log("[Dashboard] Performance Stats geladen:", perfStatsData);
 
 
       } catch (err: any) {
         setError(String(err));
+        console.error("[Dashboard] Fehler in fetchData:", err);
       } finally {
         setIsLoading(false);
+        console.log("[Dashboard] fetchData abgeschlossen.");
       }
     }
     fetchData();
 
-    // Optional: Regelmäßiges Polling für Live-Updates (z.B. alle 30 Sekunden)
     const interval = setInterval(fetchData, 30000); 
     return () => clearInterval(interval);
   }, []);
 
   // --- Handhabung des Bot-Status ---
   const toggleBotStatus = async () => {
-    alert("Button wurde geklickt!"); // <--- DEBUG-ZEILE HIER
     console.log("toggleBotStatus wurde aufgerufen!"); 
     try {
+      const action = botRunning ? 'stop' : 'start';
+      console.log(`[Dashboard] Sende Bot-Kontrollaktion: ${action}`);
       const response = await fetch('/api/bot-control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: botRunning ? 'stop' : 'start' }),
+        body: JSON.stringify({ action }),
       });
 
-      console.log("Fetch-Anfrage gesendet, Response erhalten. Status:", response.status, response.ok); 
+      console.log("[Dashboard] Fetch-Anfrage gesendet, Response erhalten. Status:", response.status, response.ok); 
 
       if (!response.ok) {
-        const errorText = await response.text(); // Versuche, den Fehlertext zu lesen
+        const errorText = await response.text(); 
         throw new Error('Fehler beim Umschalten des Bot-Status: ' + response.status + ' - ' + errorText);
       }
 
       const data = await response.json();
-      console.log("Antwort vom Backend (data):", data); 
+      console.log("[Dashboard] Antwort vom Backend (data):", data); 
 
       setBotRunning(data.running);
-      console.log(`Bot-Status im Frontend aktualisiert auf: ${data.running ? 'ONLINE' : 'OFFLINE'}.`); 
+      console.log(`[Dashboard] Bot-Status im Frontend aktualisiert auf: ${data.running ? 'ONLINE' : 'OFFLINE'}.`); 
 
     } catch (err: any) {
-      console.error(`Fehler im toggleBotStatus Catch-Block: ${err.message}`);
+      console.error(`[Dashboard] Fehler im toggleBotStatus Catch-Block: ${err.message}`);
     }
   };
 
   // --- Handhabung der Telegram Toggles ---
   const toggleTelegramSetting = async (key: keyof TelegramToggles) => {
     const newToggles = { ...telegramToggles, [key]: !telegramToggles[key] };
-    setTelegramToggles(newToggles); // Optimistisches Update
+    setTelegramToggles(newToggles); 
 
     try {
       const response = await fetch('/api/telegram-settings', {
@@ -144,10 +154,10 @@ export default function DashboardPage() {
       if (!response.ok) {
         throw new Error('Fehler beim Speichern der Telegram-Einstellungen');
       }
-      console.log(`Telegram-Einstellung ${key} erfolgreich aktualisiert.`);
+      console.log(`[Dashboard] Telegram-Einstellung ${key} erfolgreich aktualisiert.`);
     } catch (err: any) {
       setError(`Fehler beim Speichern: ${err.message}`);
-      setTelegramToggles(prev => ({ ...prev, [key]: !prev[key] })); // Rollback bei Fehler
+      setTelegramToggles(prev => ({ ...prev, [key]: !prev[key] })); 
     }
   };
 
@@ -165,11 +175,11 @@ export default function DashboardPage() {
         case 'Smart-Money-Beteiligung':
           icon = '🐳';
           break;
-        case 'LP Burned/Locked': // Angenommen, ScoreXEngine gibt dies zurück
+        case 'LP Burned/Locked': 
           icon = '🔒';
           break;
         default:
-          icon = '✨'; // Generischer Fallback
+          icon = '✨'; 
       }
       return (
         <span key={index} className="flex items-center space-x-1 whitespace-nowrap">
@@ -181,14 +191,15 @@ export default function DashboardPage() {
 
   // Hilfsfunktion zur Farbcodierung des ScoreX
   const getScoreXColor = (score: number) => {
-    if (score >= 85) return 'text-green-400'; // Hellgrün
-    if (score >= 70) return 'text-blue-300'; // Helles Blau
-    if (score >= 60) return 'text-orange-300'; // Helles Orange
+    if (score >= 85) return 'text-green-400'; 
+    if (score >= 70) return 'text-blue-300'; 
+    if (score >= 60) return 'text-orange-300'; 
     return 'text-gray-400';
   };
 
   const pnlSum = positions.reduce((acc, p) => acc + (p.currentValueUsd - p.initialInvestmentUsd), 0);
-  const invested = positions.reduce((acc, p) => acc + p.initialInvestmentUsd, 0);
+  // KORREKTUR: Investiertes Kapital kommt jetzt vom State currentVirtualCapital
+  const invested = currentVirtualCapital; 
   const returnPerc = invested > 0 ? (pnlSum / invested) * 100 : 0;
 
   return (
@@ -214,11 +225,11 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* Gesamt-Performance */}
+        {/* Gesamt-Portfolio */}
         <div className="bg-gray-800 rounded-2xl p-5 shadow-lg">
           <h2 className="text-xl font-semibold mb-3">💰 Gesamt-Portfolio</h2>
           <p className="text-3xl font-mono">
-            {invested.toFixed(2)} <span className="text-gray-400 text-lg">$ Investiert</span>
+            {invested.toFixed(2)} <span className="text-gray-400 text-lg">$ Kapital</span> {/* Text geändert */}
           </p>
           <p className={`text-3xl font-mono ${returnPerc >= 0 ? 'text-green-400' : 'text-red-400'}`}>
             {returnPerc.toFixed(2)}% <span className="text-gray-400 text-lg">G/V</span>
@@ -262,7 +273,7 @@ export default function DashboardPage() {
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
           {Object.entries(telegramToggles).map(([key, value]) => (
-            key !== 'global' && ( // "global" separat behandeln
+            key !== 'global' && ( 
               <div key={key} className="flex items-center justify-between bg-gray-700 p-3 rounded-lg">
                 <span className="text-sm font-medium">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
                 <input
@@ -311,7 +322,7 @@ export default function DashboardPage() {
                       {pos.pnlPercentage.toFixed(2)}%
                     </td>
                     <td className="p-3 text-gray-300">{pos.strategy ?? '–'}</td>
-                    <td className={`p-3 font-bold ${getScoreXColor(pos.scoreX)}`}>
+                    <td className="p-3 font-bold ${getScoreXColor(pos.scoreX)}">
                       {pos.scoreX.toFixed(0)}
                     </td>
                     <td className="p-3 space-y-1">
