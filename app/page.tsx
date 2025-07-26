@@ -80,8 +80,13 @@ export default function DashboardPage() {
 
         // --- Performance Statistiken abrufen (Platzhalter für V1) ---
         // Für Paper Trade simulieren wir diese Werte, später echte Daten aus Redis
-        setTotalTrades(Math.floor(Math.random() * 50) + 10); // Dummy-Wert
-        setWinRate(parseFloat((Math.random() * (0.85 - 0.40) + 0.40).toFixed(2)) * 100); // Dummy-Wert 40-85%
+        // KORREKTUR: Abruf von Performance-Statistiken über den neuen Endpunkt
+        const perfStatsResponse = await fetch('/api/performance-stats');
+        if (!perfStatsResponse.ok) console.error('Fehler beim Abrufen der Performance-Statistiken');
+        const perfStatsData = await perfStatsResponse.json();
+        setTotalTrades(perfStatsData.totalTrades || 0);
+        setWinRate(perfStatsData.winRate || 0);
+
 
       } catch (err: any) {
         setError(String(err));
@@ -98,6 +103,7 @@ export default function DashboardPage() {
 
   // --- Handhabung des Bot-Status ---
   const toggleBotStatus = async () => {
+    console.log("toggleBotStatus wurde aufgerufen!"); // <--- DEBUG-ZEILE HIER
     try {
       const response = await fetch('/api/bot-control', {
         method: 'POST',
@@ -107,9 +113,8 @@ export default function DashboardPage() {
       if (!response.ok) throw new Error('Fehler beim Umschalten des Bot-Status');
       const data = await response.json();
       setBotRunning(data.running);
-      // alert(`Bot ist jetzt ${data.running ? 'gestartet' : 'gestoppt'}.`); // Ersetzt durch Toast/Modale
+      console.log(`Bot ist jetzt ${data.running ? 'gestartet' : 'gestoppt'}.`);
     } catch (err: any) {
-      // alert(`Fehler beim Umschalten des Bot-Status: ${err.message}`); // Ersetzt durch Toast/Modale
       console.error(`Fehler beim Umschalten des Bot-Status: ${err.message}`);
     }
   };
