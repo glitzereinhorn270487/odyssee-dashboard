@@ -1,29 +1,38 @@
-    // /app/api/bot-control/route.ts
-    import { NextResponse } from 'next/server';
-    import { setBotRunningStatus, getBotRunningStatus } from '@/lib/bot-status'; // Korrekter Import
+   // /app/api/bot-control/route.ts
+import { NextResponse } from 'next/server';
+import { setBotRunningStatus, getBotRunningStatus } from '@/lib/bot-status'; // Korrekter Import
 
-    export async function POST(req: Request) {
-      try {
-        const { action } = await req.json();
-        console.log(`KI-Agent: Aktion empfangen: '${action}'`); // NEUER DEBUG-LOG
+export async function POST(req: Request) {
+  try {
+    const { action } = await req.json();
+    console.log(`KI-Agent: Aktion empfangen: '${action}'`); 
 
-        if (action === 'start') {
-          await setBotRunningStatus(true);
-          console.log("KI-Agent: Start-Aktion verarbeitet."); // Debug-Log
-        } else if (action === 'stop') {
-          await setBotRunningStatus(false);
-          console.log("KI-Agent: Stopp-Aktion verarbeitet."); // Debug-Log
-        } else {
-          console.warn(`KI-Agent: Ungültige Aktion empfangen: '${action}'`); // Debug-Log
-          return NextResponse.json({ error: "Ungültige Aktion." }, { status: 400 });
-        }
+    let statusToSet: boolean; // NEU: Variable für den zu setzenden Status
 
-        const newStatus = await getBotRunningStatus(); // Holt den NEUEN Status aus Redis
-        console.log(`KI-Agent: Finaler Status nach Aktion: ${newStatus ? 'ONLINE' : 'OFFLINE'}`); // Debug-Log
-        return NextResponse.json({ success: true, running: newStatus }); // Gibt den NEUEN Status zurück
-      } catch (error: any) {
-        console.error("Fehler beim Steuern des Bots:", error);
-        return NextResponse.json({ error: "Interner Fehler beim Steuern des Bots.", details: error.message }, { status: 500 });
-      }
+    if (action === 'start') {
+      statusToSet = true; // Setze den gewünschten Status
+      await setBotRunningStatus(statusToSet); // Verwende diesen Status
+      console.log("KI-Agent: Start-Aktion verarbeitet."); 
+    } else if (action === 'stop') {
+      statusToSet = false; // Setze den gewünschten Status
+      await setBotRunningStatus(statusToSet); // Verwende diesen Status
+      console.log("KI-Agent: Stopp-Aktion verarbeitet."); 
+    } else {
+      console.warn(`KI-Agent: Ungültige Aktion empfangen: '${action}'`); 
+      return NextResponse.json({ error: "Ungültige Aktion." }, { status: 400 });
     }
+
+    // KORREKTUR: Gib den Status zurück, den wir gerade gesetzt haben,
+    // anstatt ihn erneut aus Redis zu lesen, um Race Conditions zu vermeiden
+    // oder die Konsistenz der Antwort zu gewährleisten.
+    // Alternativ: newStatus = await getBotRunningStatus();
+    // Aber für die direkte Antwort ist statusToSet besser.
+    const finalStatus = statusToSet; // Verwende den Status, den wir gerade gesetzt haben
     
+    console.log(`KI-Agent: Finaler Status nach Aktion: ${finalStatus ? 'ONLINE' : 'OFFLINE'}`); 
+    return NextResponse.json({ success: true, running: finalStatus }); // Gib den finalen Status zurück
+  } catch (error: any) {
+    console.error("Fehler beim Steuern des Bots:", error);
+    return NextResponse.json({ error: "Interner Fehler beim Steuern des Bots.", details: error.message }, { status: 500 });
+  }
+}
