@@ -72,13 +72,17 @@ export default function DashboardPage() {
         const levelData = await levelResponse.json();
         setCurrentInvestmentLevel(levelData.level || 'Unbekannt');
         console.log("[Dashboard] Investment Level geladen:", levelData.level);
-
-        // --- Bot Status abrufen ---
+// --- Bot Status abrufen ---
         const botStatusResponse = await fetch('/api/bot-status'); 
         if (!botStatusResponse.ok) console.error('Fehler beim Abrufen des Bot-Status');
         const botStatusData = await botStatusResponse.json();
-        setBotRunning(botStatusData.running || false);
-        console.log("[Dashboard] Bot Status geladen (von API):", botStatusData.running); // NEUER LOG
+        
+        // KORREKTUR: Sicherstellen, dass der Wert korrekt gelesen wird.
+        // Wenn botStatusData.running ein Boolean ist, ist || false überflüssig, aber harmlos.
+        // Das Problem könnte sein, dass der initial geladene Status nicht korrekt ist.
+        setBotRunning(botStatusData.running); // Direkt den Wert zuweisen
+        console.log("[Dashboard] Bot Status geladen (von API):", botStatusData.running); 
+// ...
         
         // --- Virtuelles Kapital abrufen (NEU) ---
         const capitalResponse = await fetch('/api/virtual-capital'); // NEUER ENDPUNKT
