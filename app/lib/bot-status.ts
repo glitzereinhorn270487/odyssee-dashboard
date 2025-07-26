@@ -1,5 +1,5 @@
 // /lib/bot-status.ts
-import redis from '@/lib/redisClient'; // Pfad ggf. anpassen
+import redis from '@/lib/redisClient'; 
 
 const BOT_STATUS_KEY = 'agent:status:running';
 
@@ -8,15 +8,14 @@ const BOT_STATUS_KEY = 'agent:status:running';
  */
 export async function getBotRunningStatus(): Promise<boolean> {
   try {
-    // KORREKTUR: Expliziter Typ-Cast auf string | null, um sicherzustellen, dass TypeScript den Typ korrekt erkennt.
-    // redis.get sollte einen String oder null zurückgeben.
-    const status: string | null = await redis.get(BOT_STATUS_KEY); 
-    console.log(`[BotStatusLib] Aktueller Status aus Redis (${BOT_STATUS_KEY}): '${status}' (Typ: ${typeof status})`); 
+    const status = await redis.get(BOT_STATUS_KEY); // KEIN expliziter Typ-Cast hier, um den Rohwert zu sehen
+    console.log(`[BotStatusLib] GET - Rohwert aus Redis (${BOT_STATUS_KEY}): '${status}' (Typ: ${typeof status})`); 
     
-    // KORREKTUR: Prüfe explizit auf 'true' als String.
+    // WICHTIG: Wenn der Wert null ist, ist typeof null auch 'object'.
+    // Wir müssen explizit prüfen, ob es der String 'true' ist.
     return status === 'true'; 
   } catch (error) {
-    console.error("Fehler beim Laden des Bot-Status aus Redis, nehme an ist gestoppt:", error);
+    console.error("[BotStatusLib] Fehler beim Laden des Bot-Status aus Redis:", error);
     return false; 
   }
 }
@@ -26,10 +25,10 @@ export async function getBotRunningStatus(): Promise<boolean> {
  */
 export async function setBotRunningStatus(running: boolean): Promise<void> {
   try {
-    const valueToSet = running ? 'true' : 'false'; // Speichern als String 'true' oder 'false'
+    const valueToSet = running ? 'true' : 'false'; 
     await redis.set(BOT_STATUS_KEY, valueToSet); 
-    console.log(`[BotStatusLib] Bot-Status in Redis gesetzt auf: '${valueToSet}'`); 
+    console.log(`[BotStatusLib] SET - Bot-Status in Redis gesetzt auf: '${valueToSet}'`); 
   } catch (error) {
-    console.error("Fehler beim Speichern des Bot-status in Redis:", error);
+    console.error("[BotStatusLib] Fehler beim Speichern des Bot-status in Redis:", error);
   }
 }
